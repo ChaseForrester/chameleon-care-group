@@ -30,6 +30,15 @@
   --color-accent: var(--color-gold);
   --color-accent-soft: var(--color-gold-soft);
 
+  /* Back-compat aliases used by older page modules */
+  --color-brand-green: var(--color-leaf);
+  --color-brand-blue: var(--color-teal-bright);
+  --color-brand-orange: var(--color-coral);
+  --color-brand-yellow: var(--color-gold);
+  --color-brand-purple: var(--color-magenta);
+  --color-bg-dark: var(--color-navy);
+  --color-bg-darker: var(--color-navy-deep);
+
   --color-border: rgba(10, 42, 61, 0.1);
   --color-border-strong: rgba(10, 42, 61, 0.18);
 
