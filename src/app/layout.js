@@ -50,12 +50,20 @@ export const metadata = {
     locale: "en_AU",
     type: "website",
     siteName: "Chameleon Care Group",
-    images: [{ url: "/images/logo-mark.png", width: 400, height: 400 }],
+    images: [
+      {
+        url: "/images/about-hero.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Chameleon Care Group",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Chameleon Care Group",
     description: "Personalised NDIS support and nursing care across NSW.",
+    images: ["/images/about-hero.jpg"],
   },
   robots: {
     index: true,

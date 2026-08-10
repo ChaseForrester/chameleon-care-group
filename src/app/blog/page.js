@@ -5,6 +5,27 @@ export const metadata = {
   title: "Blog",
   description:
     "Insights on NDIS support, clinical care and living well with Chameleon Care Group.",
+  openGraph: {
+    title: "Blog | Chameleon Care Group",
+    description:
+      "Insights on NDIS support, clinical care and living well with Chameleon Care Group.",
+    type: "website",
+    images: [
+      {
+        url: "/images/about-hero.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Chameleon Care Group blog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog | Chameleon Care Group",
+    description:
+      "Insights on NDIS support, clinical care and living well with Chameleon Care Group.",
+    images: ["/images/about-hero.jpg"],
+  },
 };
 
 export default function BlogPage() {

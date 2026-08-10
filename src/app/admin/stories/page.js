@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
 import styles from "../admin.module.css";
 import {
@@ -10,7 +10,9 @@ import {
     importDefaultStories,
     repairStoriesFormatting,
     normalizeStoryFields,
+    dedupeStoriesList,
 } from "@/lib/cms";
+import { useAuth } from "@/context/AuthContext";
 
 const empty = {
     name: "",
@@ -31,7 +33,29 @@ function storyToForm(item) {
     };
 }
 
+function formatWhen(item) {
+    const raw =
+        item.createdAtIso ||
+        item.createdAt ||
+        item.updatedAtIso ||
+        item.updatedAt ||
+        null;
+    if (!raw) return "—";
+    try {
+        return new Date(raw).toLocaleString("en-AU", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    } catch {
+        return "—";
+    }
+}
+
 export default function AdminStoriesPage() {
+    const { user } = useAuth();
     const [items, setItems] = useState([]);
     const [form, setForm] = useState(empty);
     const [editId, setEditId] = useState(null);
@@ -39,10 +63,19 @@ export default function AdminStoriesPage() {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
+    const actor = useMemo(
+        () => ({
+            email: user?.email || "",
+            uid: user?.uid || "",
+        }),
+        [user]
+    );
+
     const load = async () => {
         try {
             const data = await getStories({ publishedOnly: false });
-            setItems((data || []).map((s) => normalizeStoryFields(s)));
+            const normalized = (data || []).map((s) => normalizeStoryFields(s));
+            setItems(dedupeStoriesList(normalized));
         } catch (err) {
             setError(err?.message || "Could not load stories.");
             setItems([]);
@@ -99,7 +132,7 @@ export default function AdminStoriesPage() {
         setError("");
         setMessage("");
         try {
-            await saveStory(editId, cleaned);
+            await saveStory(editId, cleaned, actor);
             setMessage(
                 editId
                     ? "Story updated."
@@ -122,9 +155,9 @@ export default function AdminStoriesPage() {
         setError("");
         setMessage("");
         try {
-            const count = await importDefaultStories();
+            const count = await importDefaultStories(actor);
             setMessage(
-                `Re-imported ${count} stories. Ryan's location is now "Gosford" (no dash). Published on /success-stories.`
+                `Re-imported ${count} stories (no doubles). Attribution: ${actor.email || "system"}.`
             );
             setForm(empty);
             setEditId(null);
@@ -148,19 +181,55 @@ export default function AdminStoriesPage() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    const removeDuplicates = async () => {
+        setBusy(true);
+        setError("");
+        setMessage("");
+        try {
+            const data = await getStories({ publishedOnly: false });
+            const normalized = (data || []).map((s) => normalizeStoryFields(s));
+            const unique = dedupeStoriesList(normalized);
+            const keepIds = new Set(unique.map((s) => s.id));
+            const extras = normalized.filter((s) => s.id && !keepIds.has(s.id));
+            for (const extra of extras) {
+                await deleteStory(extra.id);
+            }
+            setMessage(
+                extras.length
+                    ? `Removed ${extras.length} duplicate stor${extras.length === 1 ? "y" : "ies"}.`
+                    : "No duplicates found."
+            );
+            await load();
+        } catch (err) {
+            setError(err.message || "Could not remove duplicates.");
+        } finally {
+            setBusy(false);
+        }
+    };
+
     return (
         <AdminShell
             title="Success stories"
-            subtitle="Name and location are separate fields — no dash between them."
+            subtitle="Tracks who added each story and when. Duplicates are blocked."
             action={
-                <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    disabled={busy}
-                    onClick={onImportWebflow}
-                >
-                    Re-import &amp; fix stories
-                </button>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                    <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        disabled={busy}
+                        onClick={removeDuplicates}
+                    >
+                        Remove doubles
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        disabled={busy}
+                        onClick={onImportWebflow}
+                    >
+                        Re-import &amp; fix stories
+                    </button>
+                </div>
             }
         >
             <div className={styles.panel} style={{ marginBottom: "1.5rem" }}>
@@ -180,9 +249,8 @@ export default function AdminStoriesPage() {
                         color: "var(--color-text-muted)",
                     }}
                 >
-                    Example: <strong>Name</strong> = Ryan, <strong>Location</strong> = Gosford
-                    (not &quot;Central Coast – Gosford&quot;). Click{" "}
-                    <strong>Re-import &amp; fix stories</strong> if a weird dash still appears.
+                    Signed in as <strong>{user?.email || "…"}</strong> — your email is stored
+                    with each story you add. Same name + quote cannot be saved twice.
                 </p>
                 <form key={editId || "new"} onSubmit={onSubmit}>
                     <div className={styles.formGrid}>
@@ -208,9 +276,6 @@ export default function AdminStoriesPage() {
                                 placeholder="e.g. Gosford"
                                 autoComplete="off"
                             />
-                            <span className="hint" style={{ display: "block", marginTop: 4 }}>
-                                Suburb or area only — avoid special dashes
-                            </span>
                         </div>
                         <div className="form-field full">
                             <label htmlFor="story-quote">Quote / story</label>
@@ -285,6 +350,8 @@ export default function AdminStoriesPage() {
                                 <th>Name</th>
                                 <th>Location</th>
                                 <th>Story</th>
+                                <th>Added by</th>
+                                <th>When</th>
                                 <th>Status</th>
                                 <th />
                             </tr>
@@ -305,14 +372,33 @@ export default function AdminStoriesPage() {
                                         )}
                                     </td>
                                     <td>{item.location || "—"}</td>
-                                    <td style={{ maxWidth: 360 }}>
+                                    <td style={{ maxWidth: 280 }}>
                                         <span style={{ fontSize: "0.88rem", lineHeight: 1.45 }}>
                                             {item.quote
-                                                ? item.quote.length > 140
-                                                    ? `${item.quote.slice(0, 140)}...`
+                                                ? item.quote.length > 100
+                                                    ? `${item.quote.slice(0, 100)}...`
                                                     : item.quote
                                                 : "—"}
                                         </span>
+                                    </td>
+                                    <td style={{ fontSize: "0.85rem", wordBreak: "break-word" }}>
+                                        {item.createdByEmail || item.updatedByEmail || "—"}
+                                        {item.updatedByEmail &&
+                                            item.createdByEmail &&
+                                            item.updatedByEmail !== item.createdByEmail && (
+                                                <div
+                                                    style={{
+                                                        fontSize: "0.75rem",
+                                                        color: "var(--color-text-muted)",
+                                                        marginTop: 2,
+                                                    }}
+                                                >
+                                                    Last edit: {item.updatedByEmail}
+                                                </div>
+                                            )}
+                                    </td>
+                                    <td style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                                        {formatWhen(item)}
                                     </td>
                                     <td>
                                         <span

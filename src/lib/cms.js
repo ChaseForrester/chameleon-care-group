@@ -259,8 +259,52 @@ export async function deleteOffer(id) {
   await deleteDoc(doc(db(), "offers", id));
 }
 
-export async function saveStory(id, data) {
+/**
+ * Find an existing story that matches name + quote (case-insensitive).
+ * Used to prevent duplicate success stories.
+ */
+export async function findDuplicateStory({ name, quote, excludeId } = {}) {
+  const nName = cleanStoryText(name).toLowerCase();
+  const nQuote = cleanStoryText(quote).toLowerCase().slice(0, 120);
+  if (!nName || !nQuote) return null;
+
+  const all = await getStories({ publishedOnly: false });
+  return (
+    all.find((s) => {
+      if (excludeId && s.id === excludeId) return false;
+      const sName = cleanStoryText(s.name).toLowerCase();
+      const sQuote = cleanStoryText(s.quote).toLowerCase().slice(0, 120);
+      return sName === nName && sQuote === nQuote;
+    }) || null
+  );
+}
+
+/**
+ * @param {string|null} id
+ * @param {object} data
+ * @param {{ email?: string, uid?: string }} [actor] Admin who is saving
+ */
+export async function saveStory(id, data, actor = {}) {
   const normalized = normalizeStoryFields(data);
+  if (!normalized.name || !normalized.quote) {
+    throw new Error("Name and quote are required.");
+  }
+
+  const dup = await findDuplicateStory({
+    name: normalized.name,
+    quote: normalized.quote,
+    excludeId: id || undefined,
+  });
+  if (dup) {
+    throw new Error(
+      `A story for “${dup.name}” with the same quote already exists. Edit the existing one instead of adding a double.`
+    );
+  }
+
+  const email = (actor.email || "").trim() || null;
+  const uid = actor.uid || null;
+  const nowIso = new Date().toISOString();
+
   const payload = {
     name: normalized.name,
     location: normalized.location,
@@ -268,14 +312,52 @@ export async function saveStory(id, data) {
     published: !!normalized.published,
     consent: !!normalized.consent,
     updatedAt: serverTimestamp(),
+    updatedAtIso: nowIso,
   };
+
+  if (email) {
+    payload.updatedByEmail = email;
+    payload.updatedByUid = uid;
+  }
+
   if (id) {
     await setDoc(doc(db(), "stories", id), payload, { merge: true });
     return id;
   }
+
   payload.createdAt = serverTimestamp();
+  payload.createdAtIso = nowIso;
+  if (email) {
+    payload.createdByEmail = email;
+    payload.createdByUid = uid;
+  }
   const refDoc = await addDoc(collection(db(), "stories"), payload);
   return refDoc.id;
+}
+
+/** Deduplicate stories in memory (same name+quote). Keeps oldest created. */
+export function dedupeStoriesList(items = []) {
+  const seen = new Map();
+  const out = [];
+  const sorted = [...items].sort((a, b) => {
+    const ta = a.createdAt || a.createdAtIso || "";
+    const tb = b.createdAt || b.createdAtIso || "";
+    return String(ta).localeCompare(String(tb));
+  });
+  for (const item of sorted) {
+    const key = `${cleanStoryText(item.name).toLowerCase()}|${cleanStoryText(item.quote)
+      .toLowerCase()
+      .slice(0, 120)}`;
+    if (seen.has(key)) continue;
+    seen.set(key, true);
+    out.push(item);
+  }
+  // Newest first for admin table
+  return out.sort((a, b) => {
+    const ta = a.createdAt || a.createdAtIso || "";
+    const tb = b.createdAt || b.createdAtIso || "";
+    return String(tb).localeCompare(String(ta));
+  });
 }
 
 export async function deleteStory(id) {
@@ -499,12 +581,15 @@ export async function isUserAdmin(uid) {
  * Upsert the original Webflow success stories into Firestore so they appear
  * in the admin panel and on the public Success Stories page.
  */
-export async function importDefaultStories() {
+export async function importDefaultStories(actor = {}) {
   let count = 0;
+  const email = (actor.email || "system@import").trim();
+  const nowIso = new Date().toISOString();
   for (const s of DEFAULT_STORIES) {
     const normalized = normalizeStoryFields(s);
     const refDoc = doc(db(), "stories", normalized.id || s.id);
     const existing = await getDoc(refDoc);
+    const prev = existing.exists() ? existing.data() : {};
     // Full field overwrite (not shallow merge of stale en-dash locations)
     await setDoc(refDoc, {
       name: normalized.name,
@@ -514,9 +599,11 @@ export async function importDefaultStories() {
       published: true,
       consent: true,
       updatedAt: serverTimestamp(),
-      createdAt: existing.exists()
-        ? existing.data()?.createdAt || serverTimestamp()
-        : serverTimestamp(),
+      updatedAtIso: nowIso,
+      updatedByEmail: email,
+      createdAt: prev.createdAt || serverTimestamp(),
+      createdAtIso: prev.createdAtIso || nowIso,
+      createdByEmail: prev.createdByEmail || email,
     });
     count++;
   }

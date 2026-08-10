@@ -2,7 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { DEFAULT_BLOGS } from "@/lib/seedData";
-import { getSiteUrl } from "@/lib/site";
+import {
+    absoluteUrl,
+    blogJsonLd,
+    blogShareImage,
+    buildBlogMetadata,
+    resolveBlogPost,
+} from "@/lib/blogShare";
 import ShareButtons from "@/components/ShareButtons";
 import styles from "./page.module.css";
 import shareStyles from "@/components/ShareButtons.module.css";
@@ -11,32 +17,38 @@ export function generateStaticParams() {
     return DEFAULT_BLOGS.map((b) => ({ slug: b.slug }));
 }
 
+// Allow CMS-created slugs that aren't in the seed list
+export const dynamicParams = true;
+
 export async function generateMetadata({ params }) {
     const { slug } = await params;
-    const post = DEFAULT_BLOGS.find((b) => b.slug === slug);
-    if (!post) return { title: "Article" };
-    return {
-        title: post.title,
-        description: post.excerpt,
-    };
+    const post = await resolveBlogPost(slug);
+    if (!post) {
+        return {
+            title: "Article",
+            description: "Chameleon Care Group blog",
+        };
+    }
+    return buildBlogMetadata(post, slug);
 }
 
 export default async function BlogPostPage({ params }) {
     const { slug } = await params;
-    const post = DEFAULT_BLOGS.find((b) => b.slug === slug);
+    const post = await resolveBlogPost(slug);
     if (!post) notFound();
 
     const paragraphs = (post.content || "").split("\n\n");
-    const siteUrl = getSiteUrl();
-    const shareUrl = `${siteUrl}/blog/${post.slug || slug}`;
-    const shareImage = post.coverImage
-        ? post.coverImage.startsWith("http")
-            ? post.coverImage
-            : `${siteUrl}${post.coverImage}`
-        : "";
+    const shareUrl = absoluteUrl(`/blog/${post.slug || slug}`);
+    const shareImage = blogShareImage(post);
+    const jsonLd = blogJsonLd(post, slug);
 
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+
             <section className="page-hero">
                 <div className="container">
                     <Link href="/blog" className={styles.back}>
@@ -71,7 +83,17 @@ export default async function BlogPostPage({ params }) {
                 <div className="container">
                     {post.coverImage && (
                         <div className={styles.cover}>
-                            <Image src={post.coverImage} alt="" width={960} height={480} />
+                            <Image
+                                src={
+                                    post.coverImage.endsWith(".webp")
+                                        ? post.coverImage.replace(".webp", ".jpg")
+                                        : post.coverImage
+                                }
+                                alt={post.title || "Blog cover"}
+                                width={1200}
+                                height={630}
+                                priority
+                            />
                         </div>
                     )}
                     <article className="prose">
