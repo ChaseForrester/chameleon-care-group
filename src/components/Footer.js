@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import styles from "./Footer.module.css";
 import { SITE } from "@/lib/seedData";
 import { REGIONS } from "@/lib/locations";
-import { NOTIFY_EMAILS } from "@/lib/emails";
+import { PUBLIC_EMAIL } from "@/lib/emails";
 import { SocialLinks } from "@/components/SocialIcons";
 
 export default function Footer() {
@@ -67,12 +67,15 @@ export default function Footer() {
 
         <div className={styles.col}>
           <h4>Contact</h4>
-          {NOTIFY_EMAILS.map((email) => (
-            <a key={email} href={`mailto:${email}`}>
-              {email}
-            </a>
-          ))}
+          <a href={`mailto:${PUBLIC_EMAIL}`}>{PUBLIC_EMAIL}</a>
           <a href={SITE.phoneHref}>{SITE.phone}</a>
+          <a
+            href={SITE.abnHref}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ABN {SITE.abn}
+          </a>
           {REGIONS.map((r) => (
             <Link key={r.id} href={`/locations/${r.id}`}>
               {r.name}
@@ -112,8 +115,15 @@ export default function Footer() {
           <p className={styles.ack}>{SITE.acknowledgement}</p>
           <div className={styles.copy}>
             <p>
-              © {new Date().getFullYear()} Chameleon Care Group. All rights
-              reserved.{" "}
+              © {new Date().getFullYear()} Chameleon Care Group. ABN{" "}
+              <a
+                href={SITE.abnHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {SITE.abn}
+              </a>
+              . All rights reserved.{" "}
               <Link href="/privacy">Privacy</Link>
               {" · "}
               <Link href="/terms">Terms</Link>

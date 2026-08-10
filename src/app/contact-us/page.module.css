@@ -72,3 +72,46 @@ a.infoCard:hover {
         grid-template-columns: 1fr;
     }
 }
+.infoCard a {
+  color: var(--color-navy);
+  font-weight: 700;
+}
+
+.socialBlock {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.socialBlock > span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.socials {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.socialIcon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-navy);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.socialIcon:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-teal);
+  color: var(--color-teal);
+}

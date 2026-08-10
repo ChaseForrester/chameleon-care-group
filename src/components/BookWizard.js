@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { buildMailto, NOTIFY_EMAILS } from "@/lib/emails";
+import { buildMailto, PUBLIC_EMAIL } from "@/lib/emails";
 import styles from "./BookWizard.module.css";
 
 const STEPS = [
@@ -247,7 +247,7 @@ export default function BookWizard() {
                 <h2>Done! Thank you!</h2>
                 <p>
                     Your submission has been received by our team
-                    ({NOTIFY_EMAILS.join(" & ")}). We will be in touch shortly.
+                    ({PUBLIC_EMAIL}). We will be in touch shortly.
                     For urgent needs, call{" "}
                     <a href="tel:0430068300">0430 068 300</a>.
                 </p>
@@ -722,7 +722,7 @@ export default function BookWizard() {
                     {s.id === "documents" && (
                         <Field
                             label="Document names / notes"
-                            hint="e.g. NDIS plan, medical reports, referral letter. Email attachments to chameleonnursingcare@gmail.com and hello@techaidaustralia.com.au after submitting."
+                            hint="e.g. NDIS plan, medical reports, referral letter. Email attachments to chameleonnursingcare@gmail.com after submitting."
                         >
                             <textarea
                                 name="documentNames"

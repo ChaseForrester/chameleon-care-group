@@ -1,7 +1,7 @@
 import Image from "next/image";
 import BookWizard from "@/components/BookWizard";
 import { SITE } from "@/lib/seedData";
-import { NOTIFY_EMAILS } from "@/lib/emails";
+import { PUBLIC_EMAIL } from "@/lib/emails";
 import styles from "./page.module.css";
 
 export const metadata = {
@@ -52,7 +52,7 @@ export default function BookPage() {
                         <div>
                             <strong>Private & secure</strong>
                             <span>
-                                Applications go to {NOTIFY_EMAILS.join(" and ")}.
+                                Applications go to {PUBLIC_EMAIL}.
                             </span>
                         </div>
                         <div>

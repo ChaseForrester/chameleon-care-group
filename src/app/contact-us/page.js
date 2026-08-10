@@ -1,9 +1,10 @@
 import Image from "next/image";
 import ContactForm from "@/components/ContactForm";
 import { SITE } from "@/lib/seedData";
-import { NOTIFY_EMAILS } from "@/lib/emails";
+import { PUBLIC_EMAIL } from "@/lib/emails";
 import styles from "./page.module.css";
 import Reveal from "@/components/Reveal";
+import { SocialLinks } from "@/components/SocialIcons";
 
 export const metadata = {
     title: "Contact Us",
@@ -45,6 +46,20 @@ export default function ContactPage() {
                                 <strong>Phone</strong>
                                 <span>{SITE.phone}</span>
                             </a>
+                            <a href={`mailto:${PUBLIC_EMAIL}`} className={styles.infoCard}>
+                                <strong>Email</strong>
+                                <span>{PUBLIC_EMAIL}</span>
+                            </a>
+                            <div className={styles.infoCard}>
+                                <strong>ABN</strong>
+                                <a
+                                    href={SITE.abnHref}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {SITE.abn}
+                                </a>
+                            </div>
                             <a
                                 href={SITE.googleBusiness}
                                 target="_blank"
@@ -52,7 +67,7 @@ export default function ContactPage() {
                                 className={styles.infoCard}
                             >
                                 <strong>Google Business</strong>
-                                <span>View our Google profile</span>
+                                <span>View our profile &amp; map listing</span>
                             </a>
                             <a
                                 href={SITE.googleReviews}
@@ -63,16 +78,6 @@ export default function ContactPage() {
                                 <strong>Reviews</strong>
                                 <span>Leave a Google review</span>
                             </a>
-                            {NOTIFY_EMAILS.map((email) => (
-                                <a
-                                    key={email}
-                                    href={`mailto:${email}`}
-                                    className={styles.infoCard}
-                                >
-                                    <strong>Email</strong>
-                                    <span>{email}</span>
-                                </a>
-                            ))}
                             <div className={styles.infoCard}>
                                 <strong>Locations</strong>
                                 <span>{SITE.locations}</span>
@@ -82,6 +87,14 @@ export default function ContactPage() {
                                 <span>Mon–Fri 9:00am – 5:00pm</span>
                                 <span className={styles.sub}>{SITE.afterHours}</span>
                             </div>
+                        </div>
+                        <div className={styles.socialBlock}>
+                            <span>Follow &amp; review</span>
+                            <SocialLinks
+                                className={styles.socials}
+                                iconClassName={styles.socialIcon}
+                                size={20}
+                            />
                         </div>
                     </Reveal>
                     <Reveal delay={120}>

@@ -14,7 +14,13 @@ import {
 import { REGIONS, slugifySuburb } from "@/lib/locations";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import { NDIS_CHANNEL, NDIS_VIDEOS } from "@/lib/videos";
-import { IconStar } from "@/components/SocialIcons";
+import {
+  IconStar,
+  IconGoogle,
+  IconInstagram,
+  IconFacebook,
+  SocialLinks,
+} from "@/components/SocialIcons";
 
 export default function Home() {
   const services = DEFAULT_SERVICES.slice(0, 6);
@@ -39,9 +45,11 @@ export default function Home() {
       <section className={styles.hero}>
         <div className={`container ${styles.heroGrid}`}>
           <div className={`${styles.heroCopy} animate-in`}>
-            <span className="eyebrow" style={{ color: "var(--color-gold)" }}>
-              NDIS · Aged care · Private nursing
-            </span>
+            <div className={styles.heroBadges}>
+              <span className={styles.pill}>NDIS support</span>
+              <span className={styles.pill}>Aged care</span>
+              <span className={styles.pill}>Private nursing</span>
+            </div>
             <h1>
               Care that adapts.
               <br />
@@ -54,11 +62,14 @@ export default function Home() {
             </p>
             <div className={styles.heroActions}>
               <Link href="/book-with-us" className="btn btn-primary btn-lg">
-                Book in now
+                Book with us
               </Link>
               <Link href="/services" className="btn btn-ghost btn-lg">
                 Explore services
               </Link>
+              <a href={SITE.phoneHref} className="btn btn-ghost btn-lg">
+                Call {SITE.phone}
+              </a>
             </div>
             <div className={styles.trustRow}>
               <span>
@@ -68,22 +79,29 @@ export default function Home() {
                 <strong>AHPRA</strong> registered nurses
               </span>
               <span>
-                <strong>Local</strong> Shire to Coast
+                <strong>ABN</strong> {SITE.abn}
               </span>
+            </div>
+            <div className={styles.heroSocial}>
+              <span className={styles.heroSocialLabel}>Find us online</span>
+              <SocialLinks
+                className={styles.heroSocialLinks}
+                iconClassName={styles.heroSocialIcon}
+                size={18}
+              />
             </div>
           </div>
 
           <div className={`${styles.heroVisual} animate-in delay-2`}>
-            <div className={styles.heroImageWrap}>
+            <div className={styles.heroPhoto}>
               <Image
-                src="/images/logo-hero.png"
-                alt="Chameleon Care Group logo"
-                width={320}
-                height={320}
-                sizes="(max-width: 768px) 240px, 320px"
-                quality={80}
-                className={styles.heroImage}
+                src="/images/service-1.jpg"
+                alt="Participant receiving personalised NDIS support at home"
+                fill
                 priority
+                sizes="(max-width: 900px) 90vw, 420px"
+                quality={82}
+                className={styles.heroPhotoImg}
               />
             </div>
             <div className={styles.floatCard}>
@@ -92,28 +110,105 @@ export default function Home() {
                 Person-centred care tailored to your goals, routine and lifestyle.
               </span>
             </div>
+            <div className={styles.floatLogo}>
+              <Image
+                src="/images/logo-nav.png"
+                alt=""
+                width={56}
+                height={56}
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>
 
       <div className="container">
-        <div className={styles.stats}>
-          <div className={styles.stat}>
-            <strong>24/7</strong>
-            <span>Flexible care coverage</span>
+        <div className={styles.trustBar}>
+          <div className={styles.trustLegal}>
+            <span className={styles.trustKicker}>Registered business</span>
+            <strong>Chameleon Care Group</strong>
+            <a
+              href={SITE.abnHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.abnLink}
+            >
+              ABN {SITE.abn}
+            </a>
+            <span className={styles.trustMeta}>
+              Serving {SITE.region}
+            </span>
           </div>
-          <div className={styles.stat}>
-            <strong>100+</strong>
-            <span>Suburbs across NSW</span>
+          <div className={styles.stats}>
+            <div className={styles.stat}>
+              <strong>24/7</strong>
+              <span>Flexible care coverage</span>
+            </div>
+            <div className={styles.stat}>
+              <strong>100+</strong>
+              <span>Suburbs across NSW</span>
+            </div>
+            <div className={styles.stat}>
+              <strong>NDIS</strong>
+              <span>Framework aligned</span>
+            </div>
+            <div className={styles.stat}>
+              <strong>Local</strong>
+              <span>Shire · Illawarra · Coast</span>
+            </div>
           </div>
-          <div className={styles.stat}>
-            <strong>NDIS</strong>
-            <span>Framework aligned</span>
-          </div>
-          <div className={styles.stat}>
-            <strong>Local</strong>
-            <span>Shire · Illawarra · Coast</span>
-          </div>
+        </div>
+
+        <div className={styles.proofRow}>
+          <a
+            href={SITE.googleBusiness}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.proofCard}
+          >
+            <IconGoogle size={22} />
+            <div>
+              <strong>Google Business</strong>
+              <span>View our profile &amp; map listing</span>
+            </div>
+          </a>
+          <a
+            href={SITE.googleReviews}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${styles.proofCard} ${styles.proofReview}`}
+          >
+            <IconStar size={22} />
+            <div>
+              <strong>Google reviews</strong>
+              <span>Share your experience with us</span>
+            </div>
+          </a>
+          <a
+            href={SITE.social.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.proofCard}
+          >
+            <IconInstagram size={22} />
+            <div>
+              <strong>Instagram</strong>
+              <span>@chameleon_care_group</span>
+            </div>
+          </a>
+          <a
+            href={SITE.social.facebook}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.proofCard}
+          >
+            <IconFacebook size={22} />
+            <div>
+              <strong>Facebook</strong>
+              <span>Community updates &amp; care news</span>
+            </div>
+          </a>
         </div>
       </div>
 

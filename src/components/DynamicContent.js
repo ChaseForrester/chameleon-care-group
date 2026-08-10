@@ -28,21 +28,21 @@ function useCmsList(kind, fallback) {
                 else if (kind === "services")
                     data = await cms.getServices({ publishedOnly: true });
                 if (alive && data?.length) {
-          // Prefer local /images paths that exist; fix stale .png/.webp CMS paths
-          const fixed = data.map((item) => {
-            let image = item.image || item.coverImage;
-            if (typeof image === "string") {
-              image = image.replace(/\.webp$/i, ".jpg").replace(/\.png$/i, ".jpg");
-              if (!image.startsWith("/images/") && !image.startsWith("http")) {
-                image = null;
-              }
-            }
-            if (item.image != null && image) return { ...item, image };
-            if (item.coverImage != null && image) return { ...item, coverImage: image };
-            return item;
-          });
-          setItems(fixed);
-        }
+                    // Prefer local /images paths that exist; fix stale .png/.webp CMS paths
+                    const fixed = data.map((item) => {
+                        let image = item.image || item.coverImage;
+                        if (typeof image === "string") {
+                            image = image.replace(/\.webp$/i, ".jpg").replace(/\.png$/i, ".jpg");
+                            if (!image.startsWith("/images/") && !image.startsWith("http")) {
+                                image = null;
+                            }
+                        }
+                        if (item.image != null && image) return { ...item, image };
+                        if (item.coverImage != null && image) return { ...item, coverImage: image };
+                        return item;
+                    });
+                    setItems(fixed);
+                }
             } catch {
                 /* keep fallback */
             }
@@ -72,13 +72,17 @@ export function BlogGrid({ styles }) {
                     <div className={styles.cover}>
                         {post.coverImage && (
                             <Image
-                                src={post.coverImage}
-                                alt=""
+                                src={
+                                    post.coverImage.endsWith(".webp")
+                                        ? post.coverImage.replace(".webp", ".jpg")
+                                        : post.coverImage
+                                }
+                                alt={post.title || ""}
                                 width={640}
                                 height={360}
                                 sizes="(max-width: 720px) 100vw, 50vw"
                                 loading="lazy"
-                                quality={70}
+                                quality={80}
                             />
                         )}
                     </div>

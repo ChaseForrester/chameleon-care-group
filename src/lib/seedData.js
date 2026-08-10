@@ -6,11 +6,11 @@ export const SITE = {
   phone: "0430 068 300",
   phoneHref: "tel:0430068300",
   email: "chameleonnursingcare@gmail.com",
-  emailSecondary: "hello@techaidaustralia.com.au",
-  emailHref: "mailto:chameleonnursingcare@gmail.com,hello@techaidaustralia.com.au",
+  emailHref: "mailto:chameleonnursingcare@gmail.com",
   locations: "Illawarra · Central Coast · Sydney",
   region: "Sutherland Shire & Greater Sydney",
-  abn: "",
+  abn: "21 518 018 965",
+  abnHref: "https://abr.business.gov.au/ABN/View?id=21518018965",
   googleBusiness: "https://share.google/46T8pcFGRhDaphipj",
   googleReviews: "https://g.page/r/CfVeH5GtaSdMEAI/review",
   hours: [
@@ -271,7 +271,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "How do I book an NDIS assessment or support?",
-    a: "Use our online Book With Us multi-step form, call 0430 068 300, or email chameleonnursingcare@gmail.com / hello@techaidaustralia.com.au. We'll guide you through next steps.",
+    a: "Use our online Book With Us multi-step form, call 0430 068 300, or email chameleonnursingcare@gmail.com. We'll guide you through next steps.",
   },
   {
     q: "How can I leave a Google review?",

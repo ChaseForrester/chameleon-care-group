@@ -20,6 +20,8 @@ export function orgJsonLd() {
         image: `${base}/images/logo-mark.png`,
         telephone: "+61430068300",
         email: "chameleonnursingcare@gmail.com",
+        taxID: "21 518 018 965",
+        vatID: "21518018965",
         description:
             "Personalised NDIS, aged care and private nursing support across Sutherland Shire, Illawarra, Central Coast and Greater Sydney.",
         areaServed: [
