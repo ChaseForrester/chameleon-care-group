@@ -37,9 +37,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Self-register as admin once signed in (bootstrap from Settings page)
     match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false; // manage via Firebase Console / Admin SDK only
+      allow read: if request.auth != null
+        && (request.auth.uid == uid || isAdmin());
+      allow create: if request.auth != null
+        && request.auth.uid == uid;
+      allow update, delete: if isAdmin();
     }
 
     match /inquiries/{id} {

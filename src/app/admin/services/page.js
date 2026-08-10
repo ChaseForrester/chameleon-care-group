@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
 import styles from "../admin.module.css";
-import { getServices, saveService, deleteService } from "@/lib/cms";
+import { getServices, saveService, deleteService, uploadImage } from "@/lib/cms";
 
 const empty = {
     title: "",
@@ -40,6 +40,22 @@ export default function AdminServicesPage() {
                         ? Number(value)
                         : value,
         }));
+    };
+
+    const onFile = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setBusy(true);
+        setError("");
+        try {
+            const url = await uploadImage(file, "services");
+            setForm((f) => ({ ...f, image: url }));
+            setMessage("Image uploaded.");
+        } catch (err) {
+            setError(err.message || "Upload failed — enable Storage and deploy storage.rules.");
+        } finally {
+            setBusy(false);
+        }
     };
 
     const onSubmit = async (e) => {
@@ -116,8 +132,18 @@ export default function AdminServicesPage() {
                         <div className="form-field">
                             <label>Image path / URL</label>
                             <input name="image" value={form.image} onChange={onChange} />
+                            {form.image ? (
+                                <div className={styles.coverPreview}>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={form.image} alt="Service preview" />
+                                </div>
+                            ) : null}
                         </div>
                         <div className="form-field">
+                            <label>Or upload image</label>
+                            <input type="file" accept="image/*" onChange={onFile} disabled={busy} />
+                        </div>
+                        <div className="form-field full">
                             <label>Features (one per line)</label>
                             <textarea
                                 name="features"

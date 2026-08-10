@@ -58,6 +58,8 @@ const empty = {
     emergencyContactPhone: "",
     anythingElse: "",
     documentNames: "",
+    /** Uploaded files: { name, url, size, contentType, path }[] */
+    documents: [],
     organisationName: "",
     organisationDetails: "",
     invoiceEmail: "",
@@ -66,6 +68,17 @@ const empty = {
     privacyConsent: false,
     agreed: false,
 };
+
+const MAX_DOCS = 8;
+const DOC_ACCEPT =
+    ".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.txt,application/pdf,image/*,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain";
+
+function formatBytes(n) {
+    const bytes = Number(n) || 0;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 function Field({ label, required, children, hint }) {
     return (
@@ -115,6 +128,8 @@ export default function BookWizard() {
     const [error, setError] = useState("");
     const [status, setStatus] = useState("idle");
     const [animKey, setAnimKey] = useState(0);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState("");
 
     const progress = useMemo(
         () => Math.round(((step + 1) / STEPS.length) * 100),
@@ -128,6 +143,60 @@ export default function BookWizard() {
     const onChange = (e) => {
         const { name, value, type, checked } = e.target;
         setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
+        setError("");
+    };
+
+    const onDocumentsSelected = async (e) => {
+        const files = Array.from(e.target.files || []);
+        e.target.value = "";
+        if (!files.length) return;
+
+        const remaining = MAX_DOCS - (form.documents?.length || 0);
+        if (remaining <= 0) {
+            setError(`You can upload up to ${MAX_DOCS} documents.`);
+            return;
+        }
+
+        const batch = files.slice(0, remaining);
+        setUploading(true);
+        setError("");
+        setUploadProgress(`Uploading 0 of ${batch.length}…`);
+
+        try {
+            const { uploadInquiryDocument } = await import("@/lib/cms");
+            const uploaded = [];
+            for (let i = 0; i < batch.length; i++) {
+                const file = batch[i];
+                setUploadProgress(`Uploading ${i + 1} of ${batch.length}: ${file.name}`);
+                const meta = await uploadInquiryDocument(file);
+                uploaded.push(meta);
+            }
+            setForm((f) => ({
+                ...f,
+                documents: [...(f.documents || []), ...uploaded],
+            }));
+            if (files.length > remaining) {
+                setError(
+                    `Only ${remaining} more file(s) could be added (max ${MAX_DOCS}).`
+                );
+            }
+        } catch (err) {
+            console.warn(err);
+            setError(
+                err?.message ||
+                "Document upload failed. Check your connection and try again, or note the file names below."
+            );
+        } finally {
+            setUploading(false);
+            setUploadProgress("");
+        }
+    };
+
+    const removeDocument = (index) => {
+        setForm((f) => ({
+            ...f,
+            documents: (f.documents || []).filter((_, i) => i !== index),
+        }));
         setError("");
     };
 
@@ -217,24 +286,36 @@ export default function BookWizard() {
         }
         setStatus("loading");
         setError("");
+        const payload = {
+            source: "book-wizard",
+            name: `${form.firstName} ${form.lastName}`.trim(),
+            email: form.email,
+            phone: form.phone,
+            subject: "Book in application",
+            suburb: form.preferredSuburb,
+            ...form,
+            documents: Array.isArray(form.documents) ? form.documents : [],
+        };
         try {
             const { submitInquiry } = await import("@/lib/cms");
-            await submitInquiry({
-                source: "book-wizard",
-                name: `${form.firstName} ${form.lastName}`.trim(),
-                email: form.email,
-                phone: form.phone,
-                subject: "Book in application",
-                message: JSON.stringify(form, null, 2),
-                ...form,
-            });
+            await submitInquiry(payload);
             setStatus("success");
-        } catch {
+        } catch (submitErr) {
+            console.warn(submitErr);
+            // Last-resort: open the visitor's mail app so the application is not lost
+            const docLines = (form.documents || [])
+                .map((d) => `${d.name}: ${d.url}`)
+                .join("\n");
             window.location.href = buildMailto({
                 subject: "Book with us application",
-                body: Object.entries(form)
-                    .map(([k, v]) => `${k}: ${v}`)
-                    .join("\n"),
+                body: [
+                    ...Object.entries(form)
+                        .filter(([k]) => k !== "documents")
+                        .map(([k, v]) => `${k}: ${v}`),
+                    "",
+                    "Documents:",
+                    docLines || "(none uploaded)",
+                ].join("\n"),
             });
             setStatus("success");
         }
@@ -336,10 +417,10 @@ export default function BookWizard() {
                     )}
                     {s.id === "documents" && (
                         <>
-                            <h2>Any supporting documents</h2>
+                            <h2>Supporting documents</h2>
                             <p>
-                                List any documents you can provide (NDIS plan, reports, etc.).
-                                You can email files after submitting.
+                                Upload NDIS plans, medical reports or referral letters (optional).
+                                PDF, Word or images — up to 10MB each.
                             </p>
                         </>
                     )}
@@ -720,17 +801,54 @@ export default function BookWizard() {
                     )}
 
                     {s.id === "documents" && (
-                        <Field
-                            label="Document names / notes"
-                            hint="e.g. NDIS plan, medical reports, referral letter. Email attachments to chameleonnursingcare@gmail.com after submitting."
-                        >
-                            <textarea
-                                name="documentNames"
-                                value={form.documentNames}
-                                onChange={onChange}
-                                placeholder="List documents you will provide..."
-                            />
-                        </Field>
+                        <>
+                            <Field
+                                label="Upload documents"
+                                hint={`PDF, Word, images or text · max ${MAX_DOCS} files · 10MB each`}
+                            >
+                                <input
+                                    type="file"
+                                    accept={DOC_ACCEPT}
+                                    multiple
+                                    disabled={uploading || (form.documents?.length || 0) >= MAX_DOCS}
+                                    onChange={onDocumentsSelected}
+                                />
+                            </Field>
+                            {uploading && (
+                                <p className={styles.uploadStatus}>{uploadProgress || "Uploading…"}</p>
+                            )}
+                            {(form.documents || []).length > 0 && (
+                                <ul className={styles.docList}>
+                                    {form.documents.map((doc, index) => (
+                                        <li key={`${doc.path || doc.url}-${index}`} className={styles.docItem}>
+                                            <div>
+                                                <strong>{doc.name}</strong>
+                                                <span>{formatBytes(doc.size)}</span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className={styles.docRemove}
+                                                onClick={() => removeDocument(index)}
+                                                disabled={uploading}
+                                            >
+                                                Remove
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            <Field
+                                label="Document notes (optional)"
+                                hint="Anything we should know about these files, or documents you will send later."
+                            >
+                                <textarea
+                                    name="documentNames"
+                                    value={form.documentNames}
+                                    onChange={onChange}
+                                    placeholder="e.g. NDIS plan attached; medical report to follow by email"
+                                />
+                            </Field>
+                        </>
                     )}
 
                     {s.id === "billing" && (
@@ -806,6 +924,12 @@ export default function BookWizard() {
                                 <p>
                                     <strong>Address:</strong> {form.address || "—"}
                                 </p>
+                                <p>
+                                    <strong>Documents:</strong>{" "}
+                                    {(form.documents || []).length
+                                        ? (form.documents || []).map((d) => d.name).join(", ")
+                                        : form.documentNames || "None uploaded"}
+                                </p>
                             </div>
                             <label className={styles.agree}>
                                 <input
@@ -863,6 +987,7 @@ export default function BookWizard() {
                             type="button"
                             className="btn btn-primary"
                             onClick={() => go(step + 1)}
+                            disabled={uploading}
                         >
                             Next step →
                         </button>
@@ -870,7 +995,7 @@ export default function BookWizard() {
                         <button
                             type="button"
                             className="btn btn-accent"
-                            disabled={status === "loading"}
+                            disabled={status === "loading" || uploading}
                             onClick={onSubmit}
                         >
                             {status === "loading" ? "Submitting…" : "Submit application"}

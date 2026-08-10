@@ -142,6 +142,10 @@ export const DEFAULT_SERVICES = [
   },
 ];
 
+/**
+ * Success stories from the original Webflow site
+ * (https://chameleoncaregroup.webflow.io/) — published with consent.
+ */
 export const DEFAULT_STORIES = [
   {
     id: "erica",
@@ -151,6 +155,7 @@ export const DEFAULT_STORIES = [
       "They not only supported mum and our whole family but with their input and guidance we were able to make informed decisions for a peaceful and serene end of life experience.",
     published: true,
     consent: true,
+    source: "webflow",
   },
   {
     id: "kim",
@@ -160,6 +165,7 @@ export const DEFAULT_STORIES = [
       "They have made a real difference to our lives and we are so grateful for their support. Their team of carers are all professional and caring.",
     published: true,
     consent: true,
+    source: "webflow",
   },
   {
     id: "kelly",
@@ -169,6 +175,7 @@ export const DEFAULT_STORIES = [
       "They were attentive, responsive and dedicated to making Dad's stay comfortable, fun and full. The team are highly skilled but most importantly genuinely caring and compassionate.",
     published: true,
     consent: true,
+    source: "webflow",
   },
   {
     id: "ryan",
@@ -178,6 +185,7 @@ export const DEFAULT_STORIES = [
       "The team's commitment to my sister's well-being is unmatched, and I am forever thankful for the positive impact they have made on our family. Thank you, Chameleon Care Group, for making such a difference!",
     published: true,
     consent: true,
+    source: "webflow",
   },
 ];
 

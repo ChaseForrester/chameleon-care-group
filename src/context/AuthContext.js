@@ -34,9 +34,11 @@ export function AuthProvider({ children }) {
                         // Lazy-load cms so login UI does not pull Firestore at module eval time
                         const { isUserAdmin } = await import("@/lib/cms");
                         const admin = await isUserAdmin(next.uid);
-                        // Bootstrap: allow any authenticated user if admins doc missing
+                        // Allow signed-in users into the shell so they can register as
+                        // super admin once. Firestore rules still gate real writes.
                         setIsAdmin(admin || true);
                     } catch {
+                        // Permission / offline — still allow shell for bootstrap
                         setIsAdmin(!!next);
                     }
                 } else {

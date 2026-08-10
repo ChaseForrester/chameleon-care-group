@@ -1,15 +1,54 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    function isAdmin() {
+    function isSignedIn() {
       return request.auth != null;
     }
 
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isAllowedDoc() {
+      return request.resource.contentType.matches('image/.*')
+        || request.resource.contentType == 'application/pdf'
+        || request.resource.contentType == 'application/msword'
+        || request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        || request.resource.contentType == 'text/plain'
+        || request.resource.contentType == 'application/octet-stream';
+    }
+
+    function underLimit() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // Admin CMS media (blogs, stories, generic uploads)
     match /uploads/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin()
-        && request.resource.size < 10 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*|application/pdf');
+      allow write: if isSignedIn() && underLimit() && isAllowedDoc();
+    }
+
+    match /blogs/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn() && underLimit() && isImage();
+    }
+
+    match /stories/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn() && underLimit() && isImage();
+    }
+
+    match /services/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn() && underLimit() && isImage();
+    }
+
+    // Public form attachments (Book With Us, etc.)
+    // Anyone can upload; files are readable so staff can download from admin/email.
+    match /inquiry-docs/{allPaths=**} {
+      allow read: if true;
+      allow create: if underLimit() && isAllowedDoc();
+      allow update, delete: if isSignedIn();
     }
   }
 }

@@ -5,20 +5,24 @@ import Link from "next/link";
 import { buildMailto } from "@/lib/emails";
 import styles from "./ContactForm.module.css";
 
+const emptyForm = {
+    name: "",
+    email: "",
+    phone: "",
+    suburb: "",
+    subject: "",
+    message: "",
+    preferredContact: "Phone",
+    privacyConsent: false,
+    /** Honeypot — leave empty; bots fill this */
+    website: "",
+};
+
 export default function ContactForm({
     title = "Send us a message",
     source = "contact",
 }) {
-    const [form, setForm] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        suburb: "",
-        subject: "",
-        message: "",
-        preferredContact: "Phone",
-        privacyConsent: false,
-    });
+    const [form, setForm] = useState(emptyForm);
     const [status, setStatus] = useState("idle");
     const [error, setError] = useState("");
 
@@ -39,21 +43,13 @@ export default function ContactForm({
             const { submitInquiry } = await import("@/lib/cms");
             await submitInquiry({ ...form, source });
             setStatus("success");
-            setForm({
-                name: "",
-                email: "",
-                phone: "",
-                suburb: "",
-                subject: "",
-                message: "",
-                preferredContact: "Phone",
-                privacyConsent: false,
-            });
+            setForm(emptyForm);
         } catch (err) {
             console.warn(err);
+            // Last-resort: open the visitor's mail app so the enquiry is not lost
             window.location.href = buildMailto({
                 subject: form.subject || "Website enquiry",
-                body: `Name: ${form.name}\nPhone: ${form.phone}\nSuburb: ${form.suburb}\nPreferred: ${form.preferredContact}\n\n${form.message}`,
+                body: `Name: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nSuburb: ${form.suburb}\nPreferred: ${form.preferredContact}\n\n${form.message}`,
             });
             setStatus("success");
         }
@@ -171,6 +167,27 @@ export default function ContactForm({
                     value={form.message}
                     onChange={onChange}
                     placeholder="Tell us a little about your needs..."
+                />
+            </div>
+            {/* Honeypot field — hidden from real users */}
+            <div
+                aria-hidden="true"
+                style={{
+                    position: "absolute",
+                    left: "-9999px",
+                    height: 0,
+                    overflow: "hidden",
+                }}
+            >
+                <label htmlFor="website">Website</label>
+                <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={form.website}
+                    onChange={onChange}
                 />
             </div>
             <label className={styles.consent}>

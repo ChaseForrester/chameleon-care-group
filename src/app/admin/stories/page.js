@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
 import styles from "../admin.module.css";
-import { getStories, saveStory, deleteStory } from "@/lib/cms";
+import {
+    getStories,
+    saveStory,
+    deleteStory,
+    importDefaultStories,
+} from "@/lib/cms";
 
 const empty = {
     name: "",
@@ -58,10 +63,40 @@ export default function AdminStoriesPage() {
         }
     };
 
+    const onImportWebflow = async () => {
+        setBusy(true);
+        setError("");
+        setMessage("");
+        try {
+            const count = await importDefaultStories();
+            setMessage(
+                `Imported ${count} success stories from the original website (Erica, Kim, Kelly, Ryan). They are published and live on /success-stories.`
+            );
+            await load();
+        } catch (err) {
+            setError(
+                err.message ||
+                "Import failed. Sign in as super admin and ensure Firestore is enabled."
+            );
+        } finally {
+            setBusy(false);
+        }
+    };
+
     return (
         <AdminShell
             title="Success stories"
-            subtitle="Add participant stories and case studies — only with consent."
+            subtitle="Participant and family stories from the website — only publish with consent."
+            action={
+                <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    disabled={busy}
+                    onClick={onImportWebflow}
+                >
+                    Import original site stories
+                </button>
+            }
         >
             <div className={styles.panel} style={{ marginBottom: "1.5rem" }}>
                 <div className={styles.panelHeader}>
@@ -73,6 +108,11 @@ export default function AdminStoriesPage() {
                 {error && (
                     <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>
                 )}
+                <p style={{ marginBottom: "1rem", fontSize: "0.9rem", color: "var(--color-text-muted)" }}>
+                    The original Webflow site featured four stories (Erica, Kim, Kelly and Ryan).
+                    Use <strong>Import original site stories</strong> to load them into Firestore
+                    and publish them on the live Success Stories page.
+                </p>
                 <form onSubmit={onSubmit}>
                     <div className={styles.formGrid}>
                         <div className="form-field">
@@ -95,6 +135,7 @@ export default function AdminStoriesPage() {
                                 required
                                 value={form.quote}
                                 onChange={onChange}
+                                style={{ minHeight: 120 }}
                             />
                         </div>
                     </div>
@@ -116,23 +157,47 @@ export default function AdminStoriesPage() {
                         />
                         Published on website
                     </label>
-                    <button type="submit" className="btn btn-primary" disabled={busy}>
-                        {busy ? "Saving…" : "Save story"}
-                    </button>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
+                        <button type="submit" className="btn btn-primary" disabled={busy}>
+                            {busy ? "Saving…" : editId ? "Update story" : "Save story"}
+                        </button>
+                        {editId && (
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                disabled={busy}
+                                onClick={() => {
+                                    setEditId(null);
+                                    setForm(empty);
+                                }}
+                            >
+                                Cancel edit
+                            </button>
+                        )}
+                    </div>
                 </form>
             </div>
 
             <div className={styles.panel}>
                 <div className={styles.panelHeader}>
-                    <h2>All stories</h2>
+                    <h2>All stories ({items.length})</h2>
                 </div>
+                {!items.length && (
+                    <div className={styles.inquiryEmpty} style={{ marginBottom: "1rem" }}>
+                        <strong>No stories in Firestore yet</strong>
+                        <p>
+                            Click <strong>Import original site stories</strong> to add Erica, Kim,
+                            Kelly and Ryan from chameleoncaregroup.webflow.io.
+                        </p>
+                    </div>
+                )}
                 <div className={styles.tableWrap}>
                     <table className={styles.table}>
                         <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Location</th>
-                                <th>Consent</th>
+                                <th>Story</th>
                                 <th>Status</th>
                                 <th />
                             </tr>
@@ -142,9 +207,26 @@ export default function AdminStoriesPage() {
                                 <tr key={item.id}>
                                     <td>
                                         <strong>{item.name}</strong>
+                                        {item.consent ? (
+                                            <div style={{ fontSize: "0.75rem", color: "#047857" }}>
+                                                Consent ✓
+                                            </div>
+                                        ) : (
+                                            <div style={{ fontSize: "0.75rem", color: "#b91c1c" }}>
+                                                No consent
+                                            </div>
+                                        )}
                                     </td>
-                                    <td>{item.location}</td>
-                                    <td>{item.consent ? "Yes" : "No"}</td>
+                                    <td>{item.location || "—"}</td>
+                                    <td style={{ maxWidth: 360 }}>
+                                        <span style={{ fontSize: "0.88rem", lineHeight: 1.45 }}>
+                                            {item.quote
+                                                ? item.quote.length > 140
+                                                    ? `${item.quote.slice(0, 140)}…`
+                                                    : item.quote
+                                                : "—"}
+                                        </span>
+                                    </td>
                                     <td>
                                         <span
                                             className={`${styles.statusDot} ${item.published ? styles.live : styles.draft
@@ -166,6 +248,7 @@ export default function AdminStoriesPage() {
                                                         published: !!item.published,
                                                         consent: !!item.consent,
                                                     });
+                                                    window.scrollTo({ top: 0, behavior: "smooth" });
                                                 }}
                                             >
                                                 Edit

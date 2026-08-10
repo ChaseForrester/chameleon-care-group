@@ -49,7 +49,33 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=chameleon-care-group-au
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
+
+# Email notifications (recommended)
+RESEND_API_KEY=
+RESEND_FROM=Chameleon Care Group <onboarding@resend.dev>
+# NOTIFY_EMAILS=chameleonnursingcare@gmail.com
 ```
+
+### Form email notifications
+
+Contact, referral and Book With Us forms:
+
+1. Save a copy to **Firestore** (visible under `/admin/inquiries`)
+2. **Email** the care team at `chameleonnursingcare@gmail.com`
+
+**Recommended setup (Resend):**
+
+1. Sign up at [resend.com](https://resend.com) and create an API key  
+2. Add `RESEND_API_KEY` in `.env.local` and in the Vercel project env vars  
+3. For production delivery, verify `chameleoncaregroup.com.au` in Resend and set:
+   ```env
+   RESEND_FROM=Chameleon Care Group <enquiries@chameleoncaregroup.com.au>
+   ```
+4. Redeploy  
+
+Until Resend is configured, the site uses a **FormSubmit** fallback (no API key). The first submission triggers an activation email to the inbox — click the link once, then live form emails will arrive.
+
+Optional: set `NOTIFY_EMAILS` to a comma-separated list of staff addresses.
 
 ## Super Admin setup (one-time)
 
@@ -81,8 +107,9 @@ This repo is set up for the standard **GitHub → Vercel** workflow.
 1. Import [ChaseForrester/chameleon-care-group](https://github.com/ChaseForrester/chameleon-care-group) in [Vercel](https://vercel.com/new)
 2. Framework preset: **Next.js** (auto-detected)
 3. Root directory: `.` (repo root)
-4. Env vars are optional — Firebase public config is baked in with safe defaults
-5. Optional: set `NEXT_PUBLIC_SITE_URL` to your custom domain
+4. Env vars are optional for Firebase (public config has production defaults)
+5. **Recommended for form emails:** set `RESEND_API_KEY` (and optionally `RESEND_FROM`, `NOTIFY_EMAILS`)
+6. Optional: set `NEXT_PUBLIC_SITE_URL` to your custom domain
 
 Or from the CLI:
 

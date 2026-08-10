@@ -193,10 +193,19 @@ export default function AdminBlogsPage() {
                                 onChange={onChange}
                                 placeholder="/images/... or https://..."
                             />
+                            {form.coverImage ? (
+                                <div className={styles.coverPreview}>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={form.coverImage} alt="Cover preview" />
+                                </div>
+                            ) : null}
                         </div>
                         <div className="form-field">
                             <label>Or upload image</label>
-                            <input type="file" accept="image/*" onChange={onFile} />
+                            <input type="file" accept="image/*" onChange={onFile} disabled={busy} />
+                            <span className="hint" style={{ display: "block", marginTop: "0.35rem" }}>
+                                JPG, PNG or WebP · max 10MB · stored in Firebase Storage
+                            </span>
                         </div>
                     </div>
                     <label className={styles.checkRow}>
