@@ -8,6 +8,7 @@ import {
     saveStory,
     deleteStory,
     importDefaultStories,
+    repairStoriesFormatting,
     normalizeStoryFields,
 } from "@/lib/cms";
 
@@ -52,6 +53,28 @@ export default function AdminStoriesPage() {
         load();
     }, []);
 
+    // Auto-repair fancy dashes once when admin opens this page
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const fixed = await repairStoriesFormatting();
+                if (!cancelled && fixed > 0) {
+                    setMessage(
+                        `Auto-fixed ${fixed} stor${fixed === 1 ? "y" : "ies"} (removed odd dash characters).`
+                    );
+                    await load();
+                }
+            } catch {
+                /* non-blocking */
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const onChange = (e) => {
         const { name, value, type, checked } = e.target;
         setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
@@ -79,9 +102,9 @@ export default function AdminStoriesPage() {
             await saveStory(editId, cleaned);
             setMessage(
                 editId
-                    ? "Story updated and published."
+                    ? "Story updated."
                     : cleaned.published
-                        ? "Story added and published on the website."
+                        ? "Story added and published."
                         : "Story saved as draft."
             );
             setForm(empty);
@@ -101,7 +124,7 @@ export default function AdminStoriesPage() {
         try {
             const count = await importDefaultStories();
             setMessage(
-                `Imported ${count} stories (Erica, Kim, Kelly, Ryan) with clean locations. They are published on /success-stories.`
+                `Re-imported ${count} stories. Ryan's location is now "Gosford" (no dash). Published on /success-stories.`
             );
             setForm(empty);
             setEditId(null);
@@ -119,15 +142,16 @@ export default function AdminStoriesPage() {
     const onEdit = (item) => {
         setError("");
         setMessage("");
+        const cleaned = normalizeStoryFields(item);
         setEditId(item.id);
-        setForm(storyToForm(item));
+        setForm(storyToForm(cleaned));
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     return (
         <AdminShell
             title="Success stories"
-            subtitle="Participant and family stories — only publish with consent."
+            subtitle="Name and location are separate fields — no dash between them."
             action={
                 <button
                     type="button"
@@ -135,13 +159,13 @@ export default function AdminStoriesPage() {
                     disabled={busy}
                     onClick={onImportWebflow}
                 >
-                    Import / fix original stories
+                    Re-import &amp; fix stories
                 </button>
             }
         >
             <div className={styles.panel} style={{ marginBottom: "1.5rem" }}>
                 <div className={styles.panelHeader}>
-                    <h2>{editId ? "Edit story" : "New success story"}</h2>
+                    <h2>{editId ? `Edit story: ${form.name || ""}` : "New success story"}</h2>
                 </div>
                 {message && (
                     <div className={`${styles.alert} ${styles.alertOk}`}>{message}</div>
@@ -156,12 +180,11 @@ export default function AdminStoriesPage() {
                         color: "var(--color-text-muted)",
                     }}
                 >
-                    Name and location are separate fields (e.g. name <strong>Ryan</strong>,
-                    location <strong>Central Coast, Gosford</strong>). Use{" "}
-                    <strong>Import / fix original stories</strong> to repair the four Webflow
-                    stories if a dash or character looks wrong.
+                    Example: <strong>Name</strong> = Ryan, <strong>Location</strong> = Gosford
+                    (not &quot;Central Coast – Gosford&quot;). Click{" "}
+                    <strong>Re-import &amp; fix stories</strong> if a weird dash still appears.
                 </p>
-                <form onSubmit={onSubmit}>
+                <form key={editId || "new"} onSubmit={onSubmit}>
                     <div className={styles.formGrid}>
                         <div className="form-field">
                             <label htmlFor="story-name">Name / alias</label>
@@ -182,9 +205,12 @@ export default function AdminStoriesPage() {
                                 name="location"
                                 value={form.location}
                                 onChange={onChange}
-                                placeholder="e.g. Central Coast, Gosford"
+                                placeholder="e.g. Gosford"
                                 autoComplete="off"
                             />
+                            <span className="hint" style={{ display: "block", marginTop: 4 }}>
+                                Suburb or area only — avoid special dashes
+                            </span>
                         </div>
                         <div className="form-field full">
                             <label htmlFor="story-quote">Quote / story</label>
@@ -195,7 +221,7 @@ export default function AdminStoriesPage() {
                                 value={form.quote}
                                 onChange={onChange}
                                 style={{ minHeight: 120 }}
-                                placeholder="Their words…"
+                                placeholder="Their words..."
                             />
                         </div>
                     </div>
@@ -219,11 +245,7 @@ export default function AdminStoriesPage() {
                     </label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
                         <button type="submit" className="btn btn-primary" disabled={busy}>
-                            {busy
-                                ? "Saving…"
-                                : editId
-                                    ? "Update story"
-                                    : "Save story"}
+                            {busy ? "Saving..." : editId ? "Update story" : "Save story"}
                         </button>
                         {editId && (
                             <button
@@ -251,8 +273,8 @@ export default function AdminStoriesPage() {
                     <div className={styles.inquiryEmpty} style={{ marginBottom: "1rem" }}>
                         <strong>No stories in Firestore yet</strong>
                         <p>
-                            Click <strong>Import / fix original stories</strong> to add Erica,
-                            Kim, Kelly and Ryan.
+                            Click <strong>Re-import &amp; fix stories</strong> to add Erica, Kim,
+                            Kelly and Ryan.
                         </p>
                     </div>
                 )}

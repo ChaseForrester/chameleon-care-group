@@ -91,40 +91,72 @@ export async function getBlogBySlug(slug) {
 }
 
 /**
- * Normalize story text so fancy Unicode dashes/quotes don't break admin inputs
- * or look like a stray "–" between name and location.
+ * Strip fancy punctuation that breaks admin inputs / looks like a stray dash.
+ * Handles en-dash, em-dash, minus, soft hyphen, fullwidth hyphen, etc.
+ */
+export function cleanStoryText(value) {
+  if (value == null) return "";
+  return (
+    String(value)
+      // all common dash / hyphen code points → plain hyphen
+      .replace(/[\u002D\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE58\uFE63\uFF0D\u00AD]+/g, "-")
+      // curly quotes → straight
+      .replace(/[\u2018\u2019\u02BC]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      // non-breaking / narrow spaces
+      .replace(/[\u00A0\u202F\u2007\u2009\u200A\u200B\uFEFF]/g, " ")
+      // collapse whitespace (including newlines that create huge quote gaps)
+      .replace(/\s+/g, " ")
+      .trim()
+  );
+}
+
+/**
+ * Normalize story fields for admin + public display.
+ * Name and location stay separate — never "Ryan - Central Coast".
  */
 export function normalizeStoryFields(data = {}) {
-  const clean = (value) => {
-    if (value == null) return "";
-    return String(value)
-      // en-dash, em-dash, minus, horizontal bar → plain hyphen or comma-friendly space
-      .replace(/[\u2013\u2014\u2012\u2015\u2212]/g, "-")
-      // curly quotes → straight
-      .replace(/[\u2018\u2019]/g, "'")
-      .replace(/[\u201C\u201D]/g, '"')
-      // non-breaking / odd spaces
-      .replace(/[\u00A0\u202F]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
+  let name = cleanStoryText(data.name);
+  let location = cleanStoryText(data.location);
+  let quote = cleanStoryText(data.quote);
 
-  const name = clean(data.name);
-  let location = clean(data.location);
-
-  // Fix "Name - Location" accidentally stored in location, or name glued with dash
-  if (location && name && location.toLowerCase().startsWith(name.toLowerCase())) {
-    location = location.slice(name.length).replace(/^[\s\-–,]+/, "").trim();
+  // If name accidentally contains the location (e.g. "Ryan Central Coast - Gosford")
+  if (name && /central\s*coast/i.test(name)) {
+    const parts = name.split(/\s*-\s*|\s*,\s*/);
+    if (parts.length >= 2) {
+      name = parts[0].trim();
+      if (!location) location = parts.slice(1).join(", ").trim();
+    }
   }
 
-  // Prefer "Central Coast, Gosford" over "Central Coast - Gosford"
-  location = location.replace(/\s*-\s*/g, ", ").replace(/,\s*,/g, ",").replace(/^,\s*|\s*,$/g, "");
+  // Location should never start with the person name
+  if (location && name && location.toLowerCase().startsWith(name.toLowerCase())) {
+    location = location.slice(name.length).replace(/^[\s,\-]+/, "").trim();
+  }
+
+  // Known broken import from Webflow: "Central Coast - Gosford" / en-dash variants
+  if (/central\s*coast/i.test(location) && /gosford/i.test(location)) {
+    location = "Gosford";
+  } else {
+    // "Region - Suburb" → just keep a clean comma form, no hyphens
+    location = location
+      .replace(/\s*-\s*/g, ", ")
+      .replace(/,\s*,+/g, ",")
+      .replace(/^,\s*|\s*,$/g, "")
+      .trim();
+  }
+
+  // Prefer seed quote if stored quote looks corrupted (replacement chars, etc.)
+  if (/[�\uFFFD]/.test(quote) || /\?>|<\?/.test(quote)) {
+    const seed = DEFAULT_STORIES.find((s) => s.id === data.id);
+    if (seed?.quote) quote = cleanStoryText(seed.quote);
+  }
 
   return {
     ...data,
     name,
     location,
-    quote: clean(data.quote),
+    quote,
     published: data.published !== false && data.published !== "false",
     consent: data.consent !== false && data.consent !== "false",
   };
@@ -470,26 +502,55 @@ export async function isUserAdmin(uid) {
 export async function importDefaultStories() {
   let count = 0;
   for (const s of DEFAULT_STORIES) {
-    const { id, ...rest } = normalizeStoryFields(s);
-    const refDoc = doc(db(), "stories", id);
+    const normalized = normalizeStoryFields(s);
+    const refDoc = doc(db(), "stories", normalized.id || s.id);
     const existing = await getDoc(refDoc);
-    await setDoc(
-      refDoc,
-      {
-        name: rest.name,
-        location: rest.location,
-        quote: rest.quote,
-        source: rest.source || "webflow",
-        published: true,
-        consent: true,
-        updatedAt: serverTimestamp(),
-        ...(existing.exists() ? {} : { createdAt: serverTimestamp() }),
-      },
-      { merge: true }
-    );
+    // Full field overwrite (not shallow merge of stale en-dash locations)
+    await setDoc(refDoc, {
+      name: normalized.name,
+      location: normalized.location,
+      quote: normalized.quote,
+      source: "webflow",
+      published: true,
+      consent: true,
+      updatedAt: serverTimestamp(),
+      createdAt: existing.exists()
+        ? existing.data()?.createdAt || serverTimestamp()
+        : serverTimestamp(),
+    });
     count++;
   }
   return count;
+}
+
+/**
+ * Repair any stories in Firestore that still contain fancy dashes or
+ * "Name - Location" glitches. Safe to run from the admin panel.
+ */
+export async function repairStoriesFormatting() {
+  const items = await getStories({ publishedOnly: false });
+  let fixed = 0;
+  for (const item of items) {
+    if (!item?.id) continue;
+    const next = normalizeStoryFields(item);
+    const changed =
+      next.name !== (item.name || "") ||
+      next.location !== (item.location || "") ||
+      next.quote !== (item.quote || "");
+    if (!changed) continue;
+    await setDoc(
+      doc(db(), "stories", item.id),
+      {
+        name: next.name,
+        location: next.location,
+        quote: next.quote,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    fixed++;
+  }
+  return fixed;
 }
 
 export async function seedDefaultsIfEmpty() {

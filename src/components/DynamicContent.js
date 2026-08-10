@@ -11,14 +11,45 @@ import {
 } from "@/lib/seedData";
 import ShareButtons from "@/components/ShareButtons";
 
+/** Match cms.cleanStoryText — keep public bundle free of heavy imports when possible */
 function cleanStoryText(value) {
     if (value == null) return "";
     return String(value)
-        .replace(/[\u2013\u2014\u2012\u2015\u2212]/g, "-")
-        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u002D\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE58\uFE63\uFF0D\u00AD]+/g, "-")
+        .replace(/[\u2018\u2019\u02BC]/g, "'")
         .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u00A0\u202F\u2007\u2009\u200A\u200B\uFEFF]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
+}
+
+function formatStoryForDisplay(raw) {
+    const seed = DEFAULT_STORIES.find((d) => d.id === raw.id);
+    let name = cleanStoryText(raw.name || seed?.name || "");
+    let location = cleanStoryText(raw.location || seed?.location || "");
+    let quote = cleanStoryText(raw.quote || seed?.quote || "");
+
+    // Strip person name if it was glued into location
+    if (location && name && location.toLowerCase().startsWith(name.toLowerCase())) {
+        location = location.slice(name.length).replace(/^[\s,\-]+/, "").trim();
+    }
+
+    // Webflow import used "Central Coast – Gosford" (en-dash). Show suburb only.
+    if (/gosford/i.test(location)) {
+        location = "Gosford";
+    } else if (location) {
+        location = location
+            .replace(/\s*-\s*/g, ", ")
+            .replace(/,\s*,+/g, ",")
+            .replace(/^,\s*|\s*,$/g, "")
+            .trim();
+    }
+
+    // Fall back to seed if CMS data looks corrupted
+    if (!quote && seed?.quote) quote = cleanStoryText(seed.quote);
+    if (!name && seed?.name) name = cleanStoryText(seed.name);
+
+    return { ...raw, name, location, quote };
 }
 
 function useCmsList(kind, fallback) {
@@ -129,28 +160,28 @@ export function BlogGrid({ styles }) {
 export function StoriesGrid({ styles }) {
     const items = useCmsList(
         "stories",
-        DEFAULT_STORIES.filter((s) => s.published && s.consent)
+        DEFAULT_STORIES.filter((s) => s.published && s.consent).map(formatStoryForDisplay)
     );
 
     return (
         <div className={styles.grid}>
             {items
                 .filter((s) => s.consent !== false)
-                .map((s) => {
-                    const name = cleanStoryText(s.name);
-                    const location = cleanStoryText(s.location).replace(/\s*-\s*/g, ", ");
-                    const quote = cleanStoryText(s.quote);
-                    const shareTitle = `${name} - Success story | Chameleon Care Group`;
-                    const shareText = quote
-                        ? `"${quote}" - ${name}${location ? `, ${location}` : ""}`
+                .map((raw) => {
+                    const s = formatStoryForDisplay(raw);
+                    const shareTitle = `${s.name} - Success story | Chameleon Care Group`;
+                    const shareText = s.quote
+                        ? `"${s.quote}" - ${s.name}${s.location ? `, ${s.location}` : ""}`
                         : shareTitle;
                     return (
                         <article key={s.id} className={`card ${styles.card}`}>
-                            <p className={styles.quote}>&ldquo;{quote}&rdquo;</p>
-                            <div className={styles.meta}>
-                                <strong>{name}</strong>
-                                {location ? <span>{location}</span> : null}
-                            </div>
+                            <p className={styles.quote}>&ldquo;{s.quote}&rdquo;</p>
+                            <footer className={styles.meta}>
+                                <strong className={styles.personName}>{s.name}</strong>
+                                {s.location ? (
+                                    <span className={styles.personPlace}>{s.location}</span>
+                                ) : null}
+                            </footer>
                             <ShareButtons
                                 url="/success-stories"
                                 title={shareTitle}
