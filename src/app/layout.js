@@ -2,6 +2,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MobileCta from "@/components/MobileCta";
 import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({
@@ -17,29 +18,53 @@ const outfit = Outfit({
 });
 
 export const metadata = {
+  metadataBase: new URL("https://chameleoncaregroup.com.au"),
   title: {
     default:
       "Chameleon Care Group | Personalised NDIS Support in Sutherland Shire",
     template: "%s | Chameleon Care Group",
   },
   description:
-    "Personalised NDIS, aged care and private nursing support across Sutherland Shire, Illawarra, Central Coast and Sydney. Care that adapts to you.",
+    "Personalised NDIS, aged care and private nursing across Sutherland Shire, Illawarra, Central Coast and Greater Sydney. Care that adapts to you.",
   keywords: [
-    "NDIS",
-    "Sutherland Shire",
-    "nursing care",
-    "disability support",
+    "NDIS Sutherland Shire",
+    "NDIS Cronulla",
+    "NDIS Miranda",
+    "home nursing Sydney",
+    "disability support Illawarra",
+    "NDIS Gosford",
     "continence assessment",
-    "aged care",
-    "home care Sydney",
+    "aged care Sutherland",
+    "Chameleon Care Group",
   ],
+  authors: [{ name: "Chameleon Care Group" }],
   openGraph: {
     title: "Chameleon Care Group",
     description:
       "Providing support, delivering care that adapts to you. NDIS, aged care & private nursing.",
     locale: "en_AU",
     type: "website",
+    siteName: "Chameleon Care Group",
+    images: [{ url: "/images/logo-mark.png", width: 1024, height: 1024 }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Chameleon Care Group",
+    description: "Personalised NDIS support and nursing care across NSW.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "/",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0a2a3d",
 };
 
 export default function RootLayout({ children }) {
@@ -53,6 +78,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           <main id="main">{children}</main>
           <Footer />
+          <MobileCta />
         </AuthProvider>
       </body>
     </html>

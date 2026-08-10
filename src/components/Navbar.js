@@ -10,10 +10,10 @@ import { SITE } from "@/lib/seedData";
 const LINKS = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
+  { href: "/locations", label: "Areas" },
   { href: "/about", label: "About" },
   { href: "/success-stories", label: "Stories" },
   { href: "/blog", label: "Blog" },
-  { href: "/offers", label: "Offers" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -23,7 +23,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -48,15 +48,19 @@ export default function Navbar() {
         }`}
     >
       <div className={`container ${styles.inner}`}>
-        <Link href="/" className={styles.logo} aria-label="Chameleon Care Group home">
+        <Link href="/" className={styles.brand} aria-label="Chameleon Care Group home">
           <Image
-            src="/images/logo.png"
-            alt="Chameleon Care Group"
-            width={220}
-            height={38}
+            src="/images/logo-mark.png"
+            alt=""
+            width={48}
+            height={48}
             priority
-            className={styles.logoImg}
+            className={styles.mark}
           />
+          <span className={styles.wordmark}>
+            <span className={styles.wordTop}>Chameleon Care</span>
+            <span className={styles.wordBottom}>Group</span>
+          </span>
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">
@@ -82,7 +86,7 @@ export default function Navbar() {
             {SITE.phone}
           </a>
           <Link href="/book" className="btn btn-primary btn-sm">
-            Book with us
+            Book in
           </Link>
         </div>
 
@@ -106,8 +110,8 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link href="/book" className="btn btn-primary">
-            Book with us
+          <Link href="/book" className="btn btn-primary btn-block">
+            Book in now
           </Link>
           <a href={SITE.phoneHref} className={styles.mobilePhone}>
             Call {SITE.phone}

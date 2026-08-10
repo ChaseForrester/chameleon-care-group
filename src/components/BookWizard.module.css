@@ -1,0 +1,257 @@
+.wrap {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.progressBlock {
+    margin-bottom: 1.25rem;
+}
+
+.progressMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.55rem;
+    font-size: 0.88rem;
+}
+
+.progressMeta span {
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.progressMeta strong {
+    color: var(--color-navy);
+}
+
+.bar {
+    height: 8px;
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.fill {
+    height: 100%;
+    background: var(--gradient-brand);
+    border-radius: var(--radius-full);
+    transition: width 0.45s var(--ease);
+}
+
+.stepDots {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.stepDots::-webkit-scrollbar {
+    display: none;
+}
+
+.dot {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-border-strong);
+    background: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.25s var(--ease);
+    padding: 0;
+}
+
+.dot:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.dotActive {
+    border-color: var(--color-teal);
+    background: var(--color-primary-soft);
+    box-shadow: 0 0 0 3px rgba(13, 107, 122, 0.15);
+    opacity: 1 !important;
+    transform: scale(1.06);
+}
+
+.dotDone {
+    border-color: var(--color-leaf);
+    background: var(--color-leaf-soft);
+    opacity: 1 !important;
+}
+
+.dotIcon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.25rem, 4vw, 2rem);
+    box-shadow: var(--shadow-md);
+}
+
+.slideNext {
+    animation: slideInRight 0.4s var(--ease) both;
+}
+
+.slideBack {
+    animation: fadeUp 0.35s var(--ease) both;
+}
+
+.stepHead {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.emoji {
+    display: inline-grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gradient-warm);
+    font-size: 1.6rem;
+    margin-bottom: 0.85rem;
+    animation: float 3.5s ease-in-out infinite;
+}
+
+.stepHead h2 {
+    margin-bottom: 0.45rem;
+    font-size: clamp(1.35rem, 3vw, 1.7rem);
+}
+
+.stepHead p {
+    max-width: 38ch;
+    margin: 0 auto;
+}
+
+.fields {
+    margin-bottom: 0.5rem;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+}
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.nav .btn {
+    min-width: 140px;
+}
+
+.error {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #fef2f2;
+    border-radius: var(--radius-sm);
+    border: 1px solid #fecaca;
+}
+
+.review {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.summary {
+    background: var(--color-bg-muted);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+}
+
+.summary h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+}
+
+.summary p {
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+    color: var(--color-text);
+}
+
+.agree {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+    cursor: pointer;
+}
+
+.agree input {
+    width: 20px;
+    height: 20px;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+    accent-color: var(--color-teal);
+}
+
+.success {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    animation: fadeUp 0.5s var(--ease) both;
+}
+
+.successIcon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--color-leaf-soft);
+    color: var(--color-leaf);
+    display: grid;
+    place-items: center;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 auto 1.25rem;
+    animation: pulseSoft 1.5s ease-in-out 2;
+}
+
+.success h2 {
+    margin-bottom: 0.75rem;
+}
+
+.success p {
+    max-width: 36ch;
+    margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+    .row {
+        grid-template-columns: 1fr;
+    }
+
+    .nav {
+        flex-direction: column-reverse;
+    }
+
+    .nav .btn,
+    .nav>span {
+        width: 100%;
+    }
+
+    .nav>span {
+        display: none;
+    }
+}

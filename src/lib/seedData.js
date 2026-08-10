@@ -9,6 +9,7 @@ export const SITE = {
   emailHref: "mailto:chameleonnursingcare@gmail.com",
   locations: "Illawarra · Central Coast · Sydney",
   region: "Sutherland Shire & Greater Sydney",
+  abn: "",
   hours: [
     { day: "Monday", hours: "9:00am – 5:00pm" },
     { day: "Tuesday", hours: "9:00am – 5:00pm" },
@@ -261,6 +262,14 @@ export const FAQ_ITEMS = [
     q: "What services does Chameleon Care Group offer?",
     a: "In-home nursing, disability and NDIS support, aged care, palliative care, personal care, community access, respite, overnight care, medication management, behavioural support, paediatric disability care, continence assessments, and clinical reporting.",
   },
+  {
+    q: "Which suburbs do you cover near Cronulla and Miranda?",
+    a: "We cover the full Sutherland Shire including Cronulla, Miranda, Caringbah, Gymea, Engadine, Menai, Sylvania and surrounding suburbs — plus Illawarra, Central Coast and selected Greater Sydney areas.",
+  },
+  {
+    q: "How do I book an NDIS assessment or support?",
+    a: "Use our online Book With Us multi-step form, call 0430 068 300, or email chameleonnursingcare@gmail.com. We'll guide you through next steps.",
+  },
 ];
 
 export const WORKFORCE_POINTS = [
@@ -274,6 +283,6 @@ export const WORKFORCE_POINTS = [
   },
   {
     title: "Professional Standards",
-    body: "All CCG nurses maintain AHPRA registration, up-to-date training, and professional insurance for the highest standards of care.",
+    body: "All CCG nurses maintain AHPRA registration, up-to-date training and professional insurance for the highest standards of care.",
   },
 ];

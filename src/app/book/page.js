@@ -1,11 +1,16 @@
-import ContactForm from "@/components/ContactForm";
+import BookWizard from "@/components/BookWizard";
 import { SITE } from "@/lib/seedData";
 import styles from "./page.module.css";
 
 export const metadata = {
-    title: "Book With Us",
+    title: "Book In | NDIS & Nursing Application",
     description:
-        "Schedule an appointment or meet-and-greet with Chameleon Care Group.",
+        "Book with Chameleon Care Group. Complete our multi-step application for NDIS support, nursing care and assessments across Sutherland Shire, Illawarra, Central Coast and Sydney.",
+    openGraph: {
+        title: "Book In — Chameleon Care Group",
+        description:
+            "Start your application for personalised NDIS and nursing support.",
+    },
 };
 
 export default function BookPage() {
@@ -13,37 +18,40 @@ export default function BookPage() {
         <>
             <section className="page-hero">
                 <div className="container">
-                    <span className="eyebrow" style={{ color: "var(--color-brand-green)" }}>
+                    <span
+                        className="eyebrow"
+                        style={{ color: "var(--color-gold)" }}
+                    >
                         Book with us
                     </span>
-                    <h1>Schedule your appointment</h1>
+                    <h1>Start your care application</h1>
                     <p>
-                        Book a meet-and-greet, assessment or support consultation. Prefer to
-                        call? We&apos;re on {SITE.phone}.
+                        A guided multi-step form — about 5 minutes. Prefer to talk? Call{" "}
+                        <a href={SITE.phoneHref} style={{ color: "#fff", fontWeight: 700 }}>
+                            {SITE.phone}
+                        </a>
+                        .
                     </p>
                 </div>
             </section>
 
-            <section className="section">
-                <div className={`container ${styles.wrap}`}>
-                    <div className={styles.side}>
-                        <h2>What happens next?</h2>
-                        <ol className={styles.steps}>
-                            <li>
-                                <strong>Tell us what you need</strong>
-                                <span>Share a little about goals, timing and location.</span>
-                            </li>
-                            <li>
-                                <strong>We get in touch</strong>
-                                <span>Our team will confirm availability and next steps.</span>
-                            </li>
-                            <li>
-                                <strong>Meet your care team</strong>
-                                <span>Start with a conversation that puts you first.</span>
-                            </li>
-                        </ol>
+            <section className={`section ${styles.section}`}>
+                <div className="container">
+                    <BookWizard />
+                    <div className={styles.trust}>
+                        <div>
+                            <strong>Private & secure</strong>
+                            <span>Your details go to our care team only.</span>
+                        </div>
+                        <div>
+                            <strong>No obligation</strong>
+                            <span>We&apos;ll discuss options before anything starts.</span>
+                        </div>
+                        <div>
+                            <strong>Local team</strong>
+                            <span>Sutherland Shire · Illawarra · Central Coast · Sydney</span>
+                        </div>
                     </div>
-                    <ContactForm title="Request a booking" source="book" />
                 </div>
             </section>
         </>
