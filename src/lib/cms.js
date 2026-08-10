@@ -162,22 +162,40 @@ export function normalizeStoryFields(data = {}) {
   };
 }
 
+/**
+ * Single source of truth for success stories (public site + admin).
+ * Always normalises text and removes name+quote doubles so both UIs match.
+ */
 export async function getStories({ publishedOnly = true } = {}) {
-  // Avoid orderBy(createdAt) — docs without that field are excluded and
-  // composite indexes can fail, leaving the admin form empty / broken.
-  let items = await listCollection("stories", { publishedOnly });
-  if (items && items.length) {
-    items = items
-      .map((s) => normalizeStoryFields(s))
-      .sort((a, b) => {
-        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return tb - ta;
-      });
-    return items;
+  // Fetch without orderBy — missing createdAt / indexes must not break the list.
+  // For public users, Firestore rules only return published docs anyway.
+  // Prefer unfiltered read so admin sees drafts; fall back to published query.
+  let items = await listCollection("stories", { publishedOnly: false });
+  if (items === null) {
+    items = await listCollection("stories", { publishedOnly: true });
   }
-  const fallback = DEFAULT_STORIES.map((s) => normalizeStoryFields(s));
-  return publishedOnly ? fallback.filter((s) => s.published) : fallback;
+
+  if (items && items.length) {
+    let list = items.map((s) => normalizeStoryFields(s));
+    list = dedupeStoriesList(list);
+
+    if (publishedOnly) {
+      list = list.filter(
+        (s) => s.published !== false && s.consent !== false
+      );
+    }
+
+    return list;
+  }
+
+  // Firestore empty / offline — seed defaults (already unique)
+  const fallback = dedupeStoriesList(
+    DEFAULT_STORIES.map((s) => normalizeStoryFields(s))
+  );
+  if (publishedOnly) {
+    return fallback.filter((s) => s.published !== false && s.consent !== false);
+  }
+  return fallback;
 }
 
 export async function getOffers({ publishedOnly = true } = {}) {
@@ -335,29 +353,84 @@ export async function saveStory(id, data, actor = {}) {
   return refDoc.id;
 }
 
-/** Deduplicate stories in memory (same name+quote). Keeps oldest created. */
+function storyDedupeKey(item = {}) {
+  const name = cleanStoryText(item.name).toLowerCase();
+  const quote = cleanStoryText(item.quote).toLowerCase().slice(0, 160);
+  // Prefer stable seed ids when present so erica/kim/kelly/ryan win over random copies
+  return `${name}|${quote}`;
+}
+
+/**
+ * Deduplicate stories in memory (same name + quote).
+ * Keeps the best doc: fixed seed id (erica/kim/…) first, else oldest created.
+ */
 export function dedupeStoriesList(items = []) {
-  const seen = new Map();
-  const out = [];
-  const sorted = [...items].sort((a, b) => {
-    const ta = a.createdAt || a.createdAtIso || "";
-    const tb = b.createdAt || b.createdAtIso || "";
-    return String(ta).localeCompare(String(tb));
-  });
-  for (const item of sorted) {
-    const key = `${cleanStoryText(item.name).toLowerCase()}|${cleanStoryText(item.quote)
-      .toLowerCase()
-      .slice(0, 120)}`;
-    if (seen.has(key)) continue;
-    seen.set(key, true);
-    out.push(item);
+  const seedIds = new Set(DEFAULT_STORIES.map((s) => s.id));
+  const byKey = new Map();
+
+  const score = (item) => {
+    // Higher is better to keep
+    let s = 0;
+    if (seedIds.has(item.id)) s += 1000;
+    if (item.source === "webflow") s += 100;
+    if (item.createdByEmail) s += 10;
+    // Prefer older originals over later accidental re-adds
+    const t = Date.parse(item.createdAt || item.createdAtIso || "") || 0;
+    s += Math.max(0, 2_000_000_000_000 - t) / 1e15;
+    return s;
+  };
+
+  for (const item of items) {
+    if (!item) continue;
+    const key = storyDedupeKey(item);
+    if (!key || key === "|") continue;
+    const prev = byKey.get(key);
+    if (!prev || score(item) > score(prev)) {
+      byKey.set(key, item);
+    }
   }
-  // Newest first for admin table
-  return out.sort((a, b) => {
+
+  const out = Array.from(byKey.values());
+  // Stable display order: seed order first, then newest extras
+  const seedOrder = DEFAULT_STORIES.map((s) => s.id);
+  out.sort((a, b) => {
+    const ia = seedOrder.indexOf(a.id);
+    const ib = seedOrder.indexOf(b.id);
+    if (ia !== -1 || ib !== -1) {
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    }
     const ta = a.createdAt || a.createdAtIso || "";
     const tb = b.createdAt || b.createdAtIso || "";
     return String(tb).localeCompare(String(ta));
   });
+  return out;
+}
+
+/**
+ * Delete true duplicate docs from Firestore (keeps the winner from dedupeStoriesList).
+ * @returns {Promise<number>} number of docs removed
+ */
+export async function purgeDuplicateStories() {
+  // Read raw (no dedupe) so we can find extras
+  const raw = await listCollection("stories", { publishedOnly: false });
+  if (!raw || !raw.length) return 0;
+
+  const normalized = raw.map((s) => normalizeStoryFields(s));
+  const winners = dedupeStoriesList(normalized);
+  const keep = new Set(winners.map((w) => w.id).filter(Boolean));
+  let removed = 0;
+  for (const item of normalized) {
+    if (!item.id || keep.has(item.id)) continue;
+    // Only purge if it's a true content double of a kept story
+    const key = storyDedupeKey(item);
+    const hasWinner = winners.some((w) => storyDedupeKey(w) === key);
+    if (!hasWinner) continue;
+    await deleteDoc(doc(db(), "stories", item.id));
+    removed++;
+  }
+  return removed;
 }
 
 export async function deleteStory(id) {
@@ -611,13 +684,13 @@ export async function importDefaultStories(actor = {}) {
 }
 
 /**
- * Repair any stories in Firestore that still contain fancy dashes or
- * "Name - Location" glitches. Safe to run from the admin panel.
+ * Repair fancy dashes and purge content doubles so public site matches admin.
+ * @returns {Promise<{ fixed: number, removed: number }>}
  */
 export async function repairStoriesFormatting() {
-  const items = await getStories({ publishedOnly: false });
+  const raw = (await listCollection("stories", { publishedOnly: false })) || [];
   let fixed = 0;
-  for (const item of items) {
+  for (const item of raw) {
     if (!item?.id) continue;
     const next = normalizeStoryFields(item);
     const changed =
@@ -637,7 +710,8 @@ export async function repairStoriesFormatting() {
     );
     fixed++;
   }
-  return fixed;
+  const removed = await purgeDuplicateStories();
+  return { fixed, removed };
 }
 
 export async function seedDefaultsIfEmpty() {

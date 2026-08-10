@@ -69,7 +69,24 @@ function useCmsList(kind, fallback) {
                     data = await cms.getOffers({ publishedOnly: true });
                 else if (kind === "services")
                     data = await cms.getServices({ publishedOnly: true });
-                if (alive && data?.length) {
+
+                if (!alive) return;
+
+                // Stories: always replace with CMS result (already deduped in getStories).
+                // Empty array means "intentionally none" — do not keep seed fallback
+                // alongside live data (that caused doubles / mismatches with admin).
+                if (kind === "stories") {
+                    if (Array.isArray(data)) {
+                        setItems(
+                            data
+                                .filter((s) => s && s.consent !== false && s.published !== false)
+                                .map(formatStoryForDisplay)
+                        );
+                    }
+                    return;
+                }
+
+                if (data?.length) {
                     // Prefer local /images paths that exist; fix stale .png/.webp CMS paths
                     const fixed = data.map((item) => {
                         let image = item.image || item.coverImage;
@@ -163,37 +180,54 @@ export function StoriesGrid({ styles }) {
         DEFAULT_STORIES.filter((s) => s.published && s.consent).map(formatStoryForDisplay)
     );
 
+    // Final guard: unique by id, then by name+quote (matches admin getStories)
+    const seenIds = new Set();
+    const seenContent = new Set();
+    const unique = [];
+    for (const raw of items) {
+        const s = formatStoryForDisplay(raw);
+        if (!s.name || !s.quote) continue;
+        if (s.consent === false || s.published === false) continue;
+        if (s.id && seenIds.has(s.id)) continue;
+        const contentKey = `${s.name.toLowerCase()}|${s.quote.toLowerCase().slice(0, 160)}`;
+        if (seenContent.has(contentKey)) continue;
+        if (s.id) seenIds.add(s.id);
+        seenContent.add(contentKey);
+        unique.push(s);
+    }
+
     return (
         <div className={styles.grid}>
-            {items
-                .filter((s) => s.consent !== false)
-                .map((raw) => {
-                    const s = formatStoryForDisplay(raw);
-                    const shareTitle = `${s.name} - Success story | Chameleon Care Group`;
-                    const shareText = s.quote
-                        ? `"${s.quote}" - ${s.name}${s.location ? `, ${s.location}` : ""}`
-                        : shareTitle;
-                    return (
-                        <article key={s.id} className={`card ${styles.card}`}>
-                            <p className={styles.quote}>&ldquo;{s.quote}&rdquo;</p>
-                            <footer className={styles.meta}>
-                                <strong className={styles.personName}>{s.name}</strong>
-                                {s.location ? (
-                                    <span className={styles.personPlace}>{s.location}</span>
-                                ) : null}
-                            </footer>
-                            <ShareButtons
-                                url="/success-stories"
-                                title={shareTitle}
-                                text={shareText}
-                                compact
-                                label="Share this story"
-                            />
-                        </article>
-                    );
-                })}
+            {unique.map((s) => {
+                const shareTitle = `${s.name} - Success story | Chameleon Care Group`;
+                const shareText = s.quote
+                    ? `"${s.quote}" - ${s.name}${s.location ? `, ${s.location}` : ""}`
+                    : shareTitle;
+                return (
+                    <article key={s.id || contentKeySafe(s)} className={`card ${styles.card}`}>
+                        <p className={styles.quote}>&ldquo;{s.quote}&rdquo;</p>
+                        <footer className={styles.meta}>
+                            <strong className={styles.personName}>{s.name}</strong>
+                            {s.location ? (
+                                <span className={styles.personPlace}>{s.location}</span>
+                            ) : null}
+                        </footer>
+                        <ShareButtons
+                            url="/success-stories"
+                            title={shareTitle}
+                            text={shareText}
+                            compact
+                            label="Share this story"
+                        />
+                    </article>
+                );
+            })}
         </div>
     );
+}
+
+function contentKeySafe(s) {
+    return `${s.name || "story"}-${(s.quote || "").slice(0, 24)}`.replace(/\s+/g, "-");
 }
 
 export function OffersGrid({ styles }) {

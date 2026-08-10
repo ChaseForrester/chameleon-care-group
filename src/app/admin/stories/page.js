@@ -9,8 +9,8 @@ import {
     deleteStory,
     importDefaultStories,
     repairStoriesFormatting,
+    purgeDuplicateStories,
     normalizeStoryFields,
-    dedupeStoriesList,
 } from "@/lib/cms";
 import { useAuth } from "@/context/AuthContext";
 
@@ -73,9 +73,10 @@ export default function AdminStoriesPage() {
 
     const load = async () => {
         try {
+            // getStories already normalises + dedupes — same list as the public site
+            // (admin passes publishedOnly:false so drafts still appear here).
             const data = await getStories({ publishedOnly: false });
-            const normalized = (data || []).map((s) => normalizeStoryFields(s));
-            setItems(dedupeStoriesList(normalized));
+            setItems(data || []);
         } catch (err) {
             setError(err?.message || "Could not load stories.");
             setItems([]);
@@ -86,15 +87,22 @@ export default function AdminStoriesPage() {
         load();
     }, []);
 
-    // Auto-repair fancy dashes once when admin opens this page
+    // Auto-repair dashes + purge Firestore doubles so public site matches admin
     useEffect(() => {
         let cancelled = false;
         (async () => {
             try {
-                const fixed = await repairStoriesFormatting();
-                if (!cancelled && fixed > 0) {
+                const result = await repairStoriesFormatting();
+                const fixed = result?.fixed ?? 0;
+                const removed = result?.removed ?? 0;
+                if (!cancelled && (fixed > 0 || removed > 0)) {
                     setMessage(
-                        `Auto-fixed ${fixed} stor${fixed === 1 ? "y" : "ies"} (removed odd dash characters).`
+                        [
+                            fixed > 0 ? `Fixed formatting on ${fixed} stor${fixed === 1 ? "y" : "ies"}` : null,
+                            removed > 0 ? `removed ${removed} duplicate${removed === 1 ? "" : "s"}` : null,
+                        ]
+                            .filter(Boolean)
+                            .join(" · ") + "."
                     );
                     await load();
                 }
@@ -186,17 +194,10 @@ export default function AdminStoriesPage() {
         setError("");
         setMessage("");
         try {
-            const data = await getStories({ publishedOnly: false });
-            const normalized = (data || []).map((s) => normalizeStoryFields(s));
-            const unique = dedupeStoriesList(normalized);
-            const keepIds = new Set(unique.map((s) => s.id));
-            const extras = normalized.filter((s) => s.id && !keepIds.has(s.id));
-            for (const extra of extras) {
-                await deleteStory(extra.id);
-            }
+            const removed = await purgeDuplicateStories();
             setMessage(
-                extras.length
-                    ? `Removed ${extras.length} duplicate stor${extras.length === 1 ? "y" : "ies"}.`
+                removed
+                    ? `Removed ${removed} duplicate stor${removed === 1 ? "y" : "ies"} from the database. Public site will match this list.`
                     : "No duplicates found."
             );
             await load();
