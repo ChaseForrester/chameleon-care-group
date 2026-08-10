@@ -1,0 +1,49 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.card {
+  padding: 2rem;
+}
+
+.quote {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
+}
+
+.meta strong {
+  display: block;
+  color: var(--color-bg-dark);
+  margin-bottom: 0.15rem;
+}
+
+.meta span {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.note {
+  margin-top: 3rem;
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.note p {
+  max-width: 52ch;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

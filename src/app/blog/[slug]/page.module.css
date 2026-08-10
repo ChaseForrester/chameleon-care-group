@@ -1,0 +1,35 @@
+.back {
+    display: inline-block;
+    color: var(--color-brand-green);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.back:hover {
+    color: #fff;
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.25rem;
+    color: var(--color-text-on-dark-muted);
+    font-size: 0.9rem;
+}
+
+.cover {
+    max-width: 960px;
+    margin: 0 auto 2.5rem;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--color-bg-muted);
+}
+
+.cover img {
+    width: 100%;
+    height: auto;
+    max-height: 420px;
+    object-fit: cover;
+}

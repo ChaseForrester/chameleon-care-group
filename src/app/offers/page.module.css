@@ -1,0 +1,24 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.card {
+    padding: 2rem;
+}
+
+.card h2 {
+    margin: 0.75rem 0 0.75rem;
+    font-size: 1.4rem;
+}
+
+.card p {
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 720px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

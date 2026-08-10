@@ -1,0 +1,71 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+}
+
+.card:hover {
+  color: inherit;
+}
+
+.cover {
+  height: 200px;
+  background: var(--color-bg-muted);
+  overflow: hidden;
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.card:hover .cover img {
+  transform: scale(1.04);
+}
+
+.body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.body h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.65rem;
+}
+
+.body p {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.read {
+  margin-top: 1.15rem;
+  font-weight: 650;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

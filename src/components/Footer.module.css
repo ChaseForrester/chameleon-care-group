@@ -1,0 +1,157 @@
+.footer {
+  background: var(--color-bg-darker);
+  color: var(--color-text-on-dark);
+  margin-top: auto;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
+  gap: 2.5rem;
+  padding: 4rem 1.5rem 3rem;
+}
+
+.brand p {
+  color: var(--color-text-on-dark-muted);
+  margin: 1.25rem 0;
+  max-width: 32ch;
+  font-size: 0.95rem;
+}
+
+.logo {
+  height: 34px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.socials {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.socials a {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.socials a:hover {
+  background: #fff;
+  color: var(--color-primary);
+}
+
+.ndis {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  opacity: 0.95;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.col h4 {
+  color: #fff;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.col a,
+.col p {
+  color: var(--color-text-on-dark-muted);
+  font-size: 0.92rem;
+}
+
+.col a:hover {
+  color: var(--color-brand-green);
+}
+
+.meta {
+  margin-top: 0.35rem;
+  line-height: 1.5;
+}
+
+.hoursBar {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.hours {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  padding: 1.25rem 0;
+}
+
+.hourItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+}
+
+.hourItem span {
+  color: var(--color-text-on-dark-muted);
+}
+
+.hourItem strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.bottom {
+  padding: 1.75rem 0 2rem;
+}
+
+.ack {
+  color: var(--color-text-on-dark-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  max-width: 70ch;
+}
+
+.copy {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--color-text-on-dark-muted);
+}
+
+.copy a {
+  color: var(--color-brand-green);
+}
+
+.copy a:hover {
+  color: #fff;
+}
+
+@media (max-width: 960px) {
+  .top {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hours {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .top {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 3rem 1.25rem 2rem;
+  }
+  .copy {
+    flex-direction: column;
+  }
+}

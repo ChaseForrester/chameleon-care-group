@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chameleon Care Group
 
-## Getting Started
+Modern Next.js website + Firebase Super Admin CMS for [Chameleon Care Group](https://chameleoncaregroup.com.au/) — personalised NDIS, aged care and private nursing across Sutherland Shire, Illawarra, Central Coast and Sydney.
 
-First, run the development server:
+## Features
+
+### Public website
+- Redesigned UI/UX (brand-aligned greens, gradient accents, accessible navigation)
+- Pages: Home, About, Services, Success Stories, Blog, Offers, Contact, Book, Referral
+- Brand assets from the original site (`public/images/`)
+- Mobile-first responsive layout, FAQ accordion, enquiry forms
+
+### Super Admin (`/admin`)
+Signed-in admins can:
+- **Blogs** — create, edit, publish, upload cover images
+- **Offers & campaigns** — promotional CTAs with dates
+- **Success stories** — case studies with consent flag
+- **Services** — update service copy, order and visibility
+- **Page content** — override hero/body copy without a developer
+- **Inquiries** — view contact / book / referral submissions
+- **Settings** — seed Firestore defaults, register super admin, site contact fields
+
+### Firebase
+| Product | Use |
+|--------|-----|
+| **Authentication** | Email/password Super Admin login |
+| **Cloud Firestore** | Blogs, offers, stories, services, pages, settings, inquiries |
+| **Storage** | Blog/cover image uploads |
+
+**Firebase project:** `chameleon-care-group-au`  
+**Console:** https://console.firebase.google.com/project/chameleon-care-group-au/overview
+
+## Quick start
 
 ```bash
+npm install
+cp .env.example .env.local   # fill with Firebase web config
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 and http://localhost:3000/admin
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=chameleon-care-group-au
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+```
 
-## Learn More
+## Super Admin setup (one-time)
 
-To learn more about Next.js, take a look at the following resources:
+1. Open [Firebase Authentication](https://console.firebase.google.com/project/chameleon-care-group-au/authentication/providers)
+2. Click **Get started** (if prompted)
+3. Enable **Email/Password**
+4. Under **Users**, add the client’s admin email + a strong password
+5. Sign in at `/admin/login`
+6. Go to **Settings & seed** → **Register me as super admin**
+7. Optionally **Seed default content**
+8. Deploy secure rules:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+firebase deploy --only firestore:rules,storage --project chameleon-care-group-au
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> Until Auth is enabled in the Console, admin login will show `CONFIGURATION_NOT_FOUND`. The public site works with built-in seed content either way.
 
-## Deploy on Vercel
+## Deploy rules / indexes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+firebase deploy --only firestore,storage --project chameleon-care-group-au
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy website
+
+Recommended: **Vercel** (Next.js App Router).
+
+```bash
+# from repo root
+npx vercel
+```
+
+Add the same `NEXT_PUBLIC_FIREBASE_*` env vars in the Vercel project settings.
+
+## Stack
+
+- Next.js 16 (App Router) + React 19
+- Firebase JS SDK (Auth, Firestore, Storage)
+- CSS Modules + global design system
+
+## Credits
+
+- Original brand visuals: Chase Forrester  
+- NDIS & care copy adapted from chameleoncaregroup.com.au  
+- Built for Tech Aid Australia / Chameleon Care Group
