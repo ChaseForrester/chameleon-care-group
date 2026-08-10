@@ -2,6 +2,33 @@
 
 export const LEGAL_PDFS = [
     {
+        id: "referral-form",
+        title: "Referral Form",
+        description:
+            "Printable form for support coordinators, hospitals, families and referrers.",
+        file: "/pdfs/referral-form.pdf",
+        category: "Forms",
+    },
+    {
+        id: "intake-form",
+        title: "Intake Form",
+        description:
+            "Full participant intake covering NDIS, health, goals, contacts and consent.",
+        file: "/pdfs/intake-form.pdf",
+        category: "Forms",
+    },
+    {
+        id: "price-guide-2026",
+        title: "NDIS Price Guide 2026",
+        description:
+            "How CCG applies NDIA Pricing Schedule limits (effective 1 July 2026).",
+        file: "/pdfs/ndis-price-guide-2026-summary.pdf",
+        category: "Pricing",
+        externalUrl:
+            "https://www.ndis.gov.au/providers/pricing-and-payments/pricing/pricing-arrangements",
+        externalLabel: "Official NDIA pricing schedule",
+    },
+    {
         id: "code-of-conduct",
         title: "NDIS Code of Conduct — Summary",
         description:
@@ -65,6 +92,10 @@ export const KEY_LAWS = [
     {
         name: "National Disability Insurance Scheme Act 2013 (Cth)",
         why: "Establishes the NDIS and framework for participant supports.",
+    },
+    {
+        name: "NDIS Pricing Arrangements & Price Limits (NDIA)",
+        why: "Sets maximum prices for NDIS supports — see our NDIS Price Guide 2026.",
     },
     {
         name: "NDIS Code of Conduct & Practice Standards",

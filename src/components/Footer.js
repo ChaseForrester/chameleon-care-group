@@ -120,8 +120,9 @@ export default function Footer() {
             rel="noopener noreferrer"
             aria-label="Powered by Tech Aid Australia"
           >
-            <Image
-              src="/images/tech-aid-logo.png"
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/tech-aid-logo.svg"
               alt="Tech Aid Australia logo"
               width={48}
               height={48}
@@ -170,11 +171,13 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Image
-                  src="/images/tech-aid-logo.png"
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/tech-aid-logo.svg"
                   alt=""
                   width={22}
                   height={22}
+                  className={styles.creditsMark}
                 />
                 <strong>Tech Aid Australia</strong>
               </a>

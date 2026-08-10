@@ -7,17 +7,24 @@ import Reveal from "@/components/Reveal";
 export const metadata = {
     title: "Laws, Policies & Downloadable Documents",
     description:
-        "Download NDIS Code of Conduct, participant rights, privacy, incident management and safeguarding summaries. Chameleon Care Group compliance resources.",
+        "Download Referral Form, Intake Form, NDIS Price Guide 2026, Code of Conduct, privacy and safeguarding documents from Chameleon Care Group.",
     alternates: { canonical: "/laws" },
     openGraph: {
         title: "Laws & Policies | Chameleon Care Group",
         description:
-            "Downloadable PDFs covering NDIS Code of Conduct, rights, complaints, privacy and safeguarding.",
+            "Referral form, intake form, NDIS Price Guide 2026 and compliance PDFs.",
     },
 };
 
 export default function LawsPage() {
-    const categories = [...new Set(LEGAL_PDFS.map((d) => d.category))];
+    // Keep Forms & Pricing first
+    const preferred = ["Forms", "Pricing"];
+    const rest = [
+        ...new Set(
+            LEGAL_PDFS.map((d) => d.category).filter((c) => !preferred.includes(c))
+        ),
+    ];
+    const categories = [...preferred.filter((c) => LEGAL_PDFS.some((d) => d.category === c)), ...rest];
 
     return (
         <>
@@ -28,9 +35,9 @@ export default function LawsPage() {
                     </span>
                     <h1>Laws, policies & documents</h1>
                     <p>
-                        Plain-language resources for participants, families and staff.
-                        Download PDFs for your records. These summaries do not replace
-                        official legislation.
+                        Download referral and intake forms, the NDIS Price Guide 2026, and
+                        plain-language compliance resources for participants, families and
+                        staff.
                     </p>
                 </div>
             </section>
@@ -46,23 +53,23 @@ export default function LawsPage() {
                         />
                     </Reveal>
                     <div className={styles.notice}>
-                        <strong>Important:</strong> Documents on this page are educational
-                        summaries prepared for Chameleon Care Group. For the latest official
-                        rules, visit the{" "}
+                        <strong>Important:</strong> Forms and policy PDFs are for Chameleon
+                        Care Group. Pricing follows the official NDIA Pricing Schedule —
+                        always check{" "}
+                        <a
+                            href="https://www.ndis.gov.au/providers/pricing-and-payments/pricing/pricing-arrangements"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ndis.gov.au pricing arrangements
+                        </a>{" "}
+                        for the latest limits. Other rules:{" "}
                         <a
                             href="https://www.ndiscommission.gov.au"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            NDIS Quality and Safeguards Commission
-                        </a>{" "}
-                        and{" "}
-                        <a
-                            href="https://www.legislation.gov.au"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            legislation.gov.au
+                            NDIS Commission
                         </a>
                         .
                     </div>
@@ -76,13 +83,25 @@ export default function LawsPage() {
                                         <span className="badge">PDF</span>
                                         <h3>{doc.title}</h3>
                                         <p>{doc.description}</p>
-                                        <a
-                                            href={doc.file}
-                                            className="btn btn-primary btn-sm"
-                                            download
-                                        >
-                                            Download PDF
-                                        </a>
+                                        <div className={styles.docActions}>
+                                            <a
+                                                href={doc.file}
+                                                className="btn btn-primary btn-sm"
+                                                download
+                                            >
+                                                Download PDF
+                                            </a>
+                                            {doc.externalUrl && (
+                                                <a
+                                                    href={doc.externalUrl}
+                                                    className="btn btn-outline btn-sm"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    {doc.externalLabel || "Official source"}
+                                                </a>
+                                            )}
+                                        </div>
                                     </article>
                                 ))}
                             </div>
@@ -106,11 +125,11 @@ export default function LawsPage() {
                     </div>
 
                     <div className={styles.actions}>
+                        <Link href="/referral" className="btn btn-outline">
+                            Online referral
+                        </Link>
                         <Link href="/privacy" className="btn btn-outline">
                             Privacy Policy
-                        </Link>
-                        <Link href="/terms" className="btn btn-outline">
-                            Terms & Conditions
                         </Link>
                         <Link href="/book-with-us" className="btn btn-primary">
                             Book supports

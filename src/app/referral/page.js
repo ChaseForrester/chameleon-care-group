@@ -50,6 +50,16 @@ export default function ReferralPage() {
                             <li>Hospitals & aged care facilities</li>
                             <li>Families and carers</li>
                         </ul>
+                        <p style={{ marginTop: "1.25rem" }}>
+                            Prefer a printable form?{" "}
+                            <a href="/pdfs/referral-form.pdf" download>
+                                Download the Referral Form PDF
+                            </a>
+                            {" · "}
+                            <a href="/pdfs/intake-form.pdf" download>
+                                Intake Form PDF
+                            </a>
+                        </p>
                     </Reveal>
                     <Reveal delay={120}>
                         <ContactForm title="Submit a referral" source="referral" />
