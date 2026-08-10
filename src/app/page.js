@@ -12,6 +12,9 @@ import {
   WORKFORCE_POINTS,
 } from "@/lib/seedData";
 import { REGIONS, slugifySuburb } from "@/lib/locations";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
+import { NDIS_CHANNEL, NDIS_VIDEOS } from "@/lib/videos";
+import { IconStar } from "@/components/SocialIcons";
 
 export default function Home() {
   const services = DEFAULT_SERVICES.slice(0, 6);
@@ -230,8 +233,8 @@ export default function Home() {
           <div className={styles.aboutBand}>
             <div className={styles.aboutVisual}>
               <Image
-                src="/images/nurse-hero.webp"
-                alt="Compassionate nursing support"
+                src="/images/care-meeting.webp"
+                alt="Support worker and participant planning care together"
                 width={800}
                 height={438}
                 sizes="(max-width: 900px) 100vw, 50vw"
@@ -264,7 +267,47 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section section-muted">
+      <section className={`section section-muted ${styles.videoSection}`}>
+        <div className="container">
+          <div className={styles.sectionHead}>
+            <span className="eyebrow">Learn about the NDIS</span>
+            <h2>
+              Videos from{" "}
+              <span className="text-gradient">NDIS Australia</span>
+            </h2>
+            <p>
+              Official explainers from the NDIS Australia YouTube channel —
+              loaded only when you scroll near them (muted autoplay for
+              browsers that allow it).
+            </p>
+          </div>
+          <div className={styles.videoGrid}>
+            {NDIS_VIDEOS.map((v, i) => (
+              <div key={v.id} className={styles.videoCard}>
+                <YouTubeEmbed
+                  videoId={v.id}
+                  title={v.title}
+                  autoplay={i === 0}
+                />
+                <h3>{v.title}</h3>
+                <p>{v.blurb}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            <a
+              href={NDIS_CHANNEL}
+              className="btn btn-outline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              More on @NDISAustralia
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
         <div className="container">
           <div className={styles.sectionHead}>
             <span className="eyebrow">Success stories</span>
@@ -291,11 +334,11 @@ export default function Home() {
             </Link>
             <a
               href={SITE.googleReviews}
-              className="btn btn-accent"
+              className={`btn btn-accent ${styles.reviewBtn}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Leave a Google review
+              <IconStar size={18} /> Leave a Google review
             </a>
             <a
               href={SITE.googleBusiness}

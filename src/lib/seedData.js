@@ -112,7 +112,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Comprehensive continence assessments for NDIS participants, with clear recommendations and management plans that support dignity and independence.",
     icon: "clipboard",
-    image: "/images/care-meeting.webp",
+    image: "/images/nurse-clinical.webp",
     features: [
       "NDIS-compliant assessments",
       "Product recommendations",
@@ -130,7 +130,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Detailed clinical reporting for NDIS plan reviews, ensuring participants receive appropriate funding and care packages.",
     icon: "file",
-    image: "/images/care-meeting.webp",
+    image: "/images/clinical-report.webp",
     features: [
       "NDIS-ready clinical justifications",
       "Complex care documentation",
@@ -199,7 +199,7 @@ Every participant has different goals, routines, and support needs. We build ind
 ## Ready to get started?
 
 Contact our team for a conversation about how we can support you or your loved one.`,
-    coverImage: "/images/nurse-hero.webp",
+    coverImage: "/images/about-hero.webp",
     author: "Chameleon Care Group",
     published: true,
     publishedAt: "2026-01-15T00:00:00.000Z",
@@ -221,7 +221,7 @@ Contact our team for a conversation about how we can support you or your loved o
 - Documentation for planners and support coordinators
 
 Our clinical team delivers assessments that are clear, respectful, and planner-ready.`,
-    coverImage: "/images/care-family.webp",
+    coverImage: "/images/nurse-clinical.webp",
     author: "Chameleon Care Group",
     published: true,
     publishedAt: "2026-02-01T00:00:00.000Z",

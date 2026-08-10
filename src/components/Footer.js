@@ -7,6 +7,7 @@ import styles from "./Footer.module.css";
 import { SITE } from "@/lib/seedData";
 import { REGIONS } from "@/lib/locations";
 import { NOTIFY_EMAILS } from "@/lib/emails";
+import { SocialLinks } from "@/components/SocialIcons";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -33,37 +34,7 @@ export default function Footer() {
             Personalised NDIS, aged care and private nursing across the
             Sutherland Shire, Illawarra, Central Coast and Greater Sydney.
           </p>
-          <div className={styles.socials}>
-            <a
-              href={SITE.social.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Facebook
-            </a>
-            <a
-              href={SITE.social.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Instagram
-            </a>
-            <a
-              href={SITE.googleBusiness}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Google
-            </a>
-            <a
-              href={SITE.googleReviews}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.reviewLink}
-            >
-              Leave a review
-            </a>
-          </div>
+          <SocialLinks className={styles.socials} iconClassName={styles.socialIcon} size={20} />
           <Image
             src="/images/ndis.png"
             alt="NDIS provider"

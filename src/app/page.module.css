@@ -454,6 +454,35 @@
   max-width: 48ch;
 }
 
+.videoSection {
+  overflow: hidden;
+}
+
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.videoCard h3 {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.videoCard p {
+  font-size: 0.9rem;
+}
+
+.reviewBtn {
+  gap: 0.45rem;
+}
+
+@media (max-width: 960px) {
+  .videoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 960px) {
 
   .heroGrid,

@@ -47,33 +47,41 @@
 
 .socials {
   display: flex;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  gap: 0.55rem;
   margin-bottom: 1.1rem;
 }
 
-.socials a {
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.82rem;
-  padding: 0.4rem 0.7rem;
-  border-radius: var(--radius-full);
+.socialIcon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.socials a:hover {
+.socialIcon:hover {
   background: #fff;
   color: var(--color-navy);
+  transform: translateY(-2px);
 }
 
-.reviewLink {
-  background: rgba(232, 160, 30, 0.15) !important;
-  border-color: rgba(232, 160, 30, 0.45) !important;
-  color: var(--color-gold) !important;
+.socialIcon:global(.review) {
+  border-color: rgba(232, 160, 30, 0.5);
+  color: var(--color-gold);
+  background: rgba(232, 160, 30, 0.12);
 }
 
-.reviewLink:hover {
-  background: var(--color-gold) !important;
-  color: #06201e !important;
+.socialIcon:global(.review):hover {
+  background: var(--color-gold);
+  color: #06201e;
+  border-color: var(--color-gold);
 }
 
 .ndis {

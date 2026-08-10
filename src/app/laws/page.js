@@ -46,8 +46,8 @@ export default function LawsPage() {
                 <div className="container">
                     <Reveal className={styles.heroMedia}>
                         <Image
-                            src="/images/nurse-clinical.webp"
-                            alt="Safe, professional NDIS clinical care"
+                            src="/images/clinical-report.webp"
+                            alt="Safe, professional NDIS clinical care documentation"
                             width={1100}
                             height={360}
                         />
