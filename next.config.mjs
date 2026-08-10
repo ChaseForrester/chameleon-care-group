@@ -23,9 +23,8 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  experimental: {
-    optimizePackageImports: ["firebase"],
-  },
+  // Do NOT add optimizePackageImports for "firebase" — it breaks service
+  // registration and causes "Service firestore is not available" at runtime.
   async redirects() {
     return [
       { source: "/about", destination: "/about-us", permanent: true },

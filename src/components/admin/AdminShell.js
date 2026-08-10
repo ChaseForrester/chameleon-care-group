@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import styles from "@/app/admin/admin.module.css";
@@ -21,12 +22,17 @@ export default function AdminShell({ children, title, subtitle, action }) {
     const router = useRouter();
     const { user, loading, isAdmin, signOut } = useAuth();
 
+    useEffect(() => {
+        if (!loading && !user) {
+            router.replace("/admin/login");
+        }
+    }, [loading, user, router]);
+
     if (loading) {
         return <div className={styles.loading}>Loading admin…</div>;
     }
 
     if (!user) {
-        if (typeof window !== "undefined") router.replace("/admin/login");
         return <div className={styles.loading}>Redirecting to login…</div>;
     }
 

@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import styles from "../admin.module.css";
 
 export default function AdminLoginPage() {
-    const { user, loading, signIn } = useAuth();
+    const { user, loading, signIn, error: authError } = useAuth();
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -40,8 +40,10 @@ export default function AdminLoginPage() {
             <div className={styles.loginCard}>
                 <h1>Super Admin</h1>
                 <p>Sign in to manage blogs, offers, stories and site content.</p>
-                {error && (
-                    <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>
+                {(error || authError) && (
+                    <div className={`${styles.alert} ${styles.alertError}`}>
+                        {error || authError}
+                    </div>
                 )}
                 <form onSubmit={onSubmit}>
                     <div className="form-field">

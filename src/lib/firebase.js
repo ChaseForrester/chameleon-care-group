@@ -24,11 +24,7 @@ const firebaseConfig = {
     "1:356707034868:web:41f97eef13f62aef2e60a1",
 };
 
-function getFirebaseApp() {
-  if (getApps().length) return getApp();
-  return initializeApp(firebaseConfig);
-}
-
+let _app;
 let _auth;
 let _db;
 let _storage;
@@ -39,30 +35,58 @@ function assertClient() {
   }
 }
 
+function getFirebaseApp() {
+  assertClient();
+  if (_app) return _app;
+  _app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  return _app;
+}
+
+/** Browser-only Auth instance (lazy). */
 export function getClientAuth() {
   assertClient();
   if (!_auth) _auth = getAuth(getFirebaseApp());
   return _auth;
 }
 
+/** Browser-only Firestore instance (lazy). */
 export function getClientDb() {
   assertClient();
   if (!_db) _db = getFirestore(getFirebaseApp());
   return _db;
 }
 
+/** Browser-only Storage instance (lazy). */
 export function getClientStorage() {
   assertClient();
   if (!_storage) _storage = getStorage(getFirebaseApp());
   return _storage;
 }
 
-// Back-compat lazy proxies for existing imports (client-only usage)
-export const auth =
-  typeof window !== "undefined" ? getAuth(getFirebaseApp()) : null;
-export const db =
-  typeof window !== "undefined" ? getFirestore(getFirebaseApp()) : null;
-export const storage =
-  typeof window !== "undefined" ? getStorage(getFirebaseApp()) : null;
+/**
+ * Back-compat getters — do NOT call getAuth/getFirestore at module top level.
+ * Eager init breaks under Next/Turbopack ("Service firestore is not available")
+ * when the Firebase packages are tree-shaken or split across chunks.
+ */
+export const auth = {
+  get currentUser() {
+    if (typeof window === "undefined") return null;
+    try {
+      return getClientAuth().currentUser;
+    } catch {
+      return null;
+    }
+  },
+};
 
-export default typeof window !== "undefined" ? getFirebaseApp() : null;
+export function db() {
+  return getClientDb();
+}
+
+export function storage() {
+  return getClientStorage();
+}
+
+export default function getAppDefault() {
+  return getFirebaseApp();
+}

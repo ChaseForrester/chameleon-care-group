@@ -6,13 +6,13 @@ import {
     signInWithEmailAndPassword,
     signOut as firebaseSignOut,
 } from "firebase/auth";
-import { auth, getClientAuth } from "@/lib/firebase";
-import { isUserAdmin } from "@/lib/cms";
+import { getClientAuth } from "@/lib/firebase";
 
 const AuthContext = createContext({
     user: null,
     isAdmin: false,
     loading: true,
+    error: null,
     signIn: async () => { },
     signOut: async () => { },
 });
@@ -21,26 +21,41 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth || getClientAuth(), async (next) => {
-            setUser(next);
-            if (next) {
-                // Treat any authenticated user as admin if admins doc missing (bootstrap),
-                // otherwise require admins/{uid}
-                try {
-                    const admin = await isUserAdmin(next.uid);
-                    // Bootstrap: if check fails open (no rules yet), allow authenticated
-                    setIsAdmin(admin || true);
-                } catch {
-                    setIsAdmin(!!next);
+        let unsub = () => { };
+        try {
+            const auth = getClientAuth();
+            unsub = onAuthStateChanged(auth, async (next) => {
+                setUser(next);
+                if (next) {
+                    try {
+                        // Lazy-load cms so login UI does not pull Firestore at module eval time
+                        const { isUserAdmin } = await import("@/lib/cms");
+                        const admin = await isUserAdmin(next.uid);
+                        // Bootstrap: allow any authenticated user if admins doc missing
+                        setIsAdmin(admin || true);
+                    } catch {
+                        setIsAdmin(!!next);
+                    }
+                } else {
+                    setIsAdmin(false);
                 }
-            } else {
-                setIsAdmin(false);
-            }
+                setLoading(false);
+            });
+        } catch (err) {
+            console.error("[auth] Firebase init failed", err);
+            setError(err?.message || "Firebase failed to start");
             setLoading(false);
-        });
-        return () => unsub();
+        }
+        return () => {
+            try {
+                unsub();
+            } catch {
+                /* ignore */
+            }
+        };
     }, []);
 
     const value = useMemo(
@@ -48,11 +63,12 @@ export function AuthProvider({ children }) {
             user,
             isAdmin,
             loading,
+            error,
             signIn: (email, password) =>
-                signInWithEmailAndPassword(auth || getClientAuth(), email, password),
-            signOut: () => firebaseSignOut(auth || getClientAuth()),
+                signInWithEmailAndPassword(getClientAuth(), email, password),
+            signOut: () => firebaseSignOut(getClientAuth()),
         }),
-        [user, isAdmin, loading]
+        [user, isAdmin, loading, error]
     );
 
     return (
