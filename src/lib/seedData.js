@@ -11,6 +11,8 @@ export const SITE = {
   locations: "Illawarra · Central Coast · Sydney",
   region: "Sutherland Shire & Greater Sydney",
   abn: "",
+  googleBusiness: "https://share.google/46T8pcFGRhDaphipj",
+  googleReviews: "https://g.page/r/CfVeH5GtaSdMEAI/review",
   hours: [
     { day: "Monday", hours: "9:00am – 5:00pm" },
     { day: "Tuesday", hours: "9:00am – 5:00pm" },
@@ -38,7 +40,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Personal care, medication management, general domestic assistance, and support to appointments — delivered with respect and flexibility in the comfort of your home.",
     icon: "heart",
-    image: "/images/service-1.jpg",
+    image: "/images/service-1.webp",
     features: [
       "Personal care & hygiene support",
       "Medication management",
@@ -56,7 +58,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Develop and enhance everyday skills while accessing the community in ways that match your goals, interests, and NDIS plan.",
     icon: "users",
-    image: "/images/service-2.jpg",
+    image: "/images/service-2.webp",
     features: [
       "Community participation",
       "Skill building programs",
@@ -74,7 +76,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Flexible respite and overnight care designed to support participants and give families peace of mind — day or night.",
     icon: "moon",
-    image: "/images/service-3.jpg",
+    image: "/images/service-3.webp",
     features: [
       "In-home respite",
       "Overnight support",
@@ -92,7 +94,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Clinical nursing, behavioural management, palliative support, and paediatric disability care delivered by a professional, compassionate team.",
     icon: "stethoscope",
-    image: "/images/nurse-hero.jpg",
+    image: "/images/nurse-hero.webp",
     features: [
       "In-home nursing",
       "Behavioural management",
@@ -110,7 +112,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Comprehensive continence assessments for NDIS participants, with clear recommendations and management plans that support dignity and independence.",
     icon: "clipboard",
-    image: "/images/care-meeting.jpg",
+    image: "/images/care-meeting.webp",
     features: [
       "NDIS-compliant assessments",
       "Product recommendations",
@@ -128,7 +130,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Detailed clinical reporting for NDIS plan reviews, ensuring participants receive appropriate funding and care packages.",
     icon: "file",
-    image: "/images/care-meeting.jpg",
+    image: "/images/care-meeting.webp",
     features: [
       "NDIS-ready clinical justifications",
       "Complex care documentation",
@@ -197,7 +199,7 @@ Every participant has different goals, routines, and support needs. We build ind
 ## Ready to get started?
 
 Contact our team for a conversation about how we can support you or your loved one.`,
-    coverImage: "/images/nurse-hero.jpg",
+    coverImage: "/images/nurse-hero.webp",
     author: "Chameleon Care Group",
     published: true,
     publishedAt: "2026-01-15T00:00:00.000Z",
@@ -219,7 +221,7 @@ Contact our team for a conversation about how we can support you or your loved o
 - Documentation for planners and support coordinators
 
 Our clinical team delivers assessments that are clear, respectful, and planner-ready.`,
-    coverImage: "/images/care-family.jpg",
+    coverImage: "/images/care-family.webp",
     author: "Chameleon Care Group",
     published: true,
     publishedAt: "2026-02-01T00:00:00.000Z",
@@ -270,6 +272,10 @@ export const FAQ_ITEMS = [
   {
     q: "How do I book an NDIS assessment or support?",
     a: "Use our online Book With Us multi-step form, call 0430 068 300, or email chameleonnursingcare@gmail.com / hello@techaidaustralia.com.au. We'll guide you through next steps.",
+  },
+  {
+    q: "How can I leave a Google review?",
+    a: "We would love your feedback. Leave a review on our Google Business Profile: https://g.page/r/CfVeH5GtaSdMEAI/review",
   },
 ];
 

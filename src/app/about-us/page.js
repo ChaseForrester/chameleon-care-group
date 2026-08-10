@@ -51,7 +51,7 @@ export default function AboutPage() {
           </Reveal>
           <Reveal delay={120} className={styles.imageCard}>
             <Image
-              src="/images/about-hero.jpg"
+              src="/images/about-hero.webp"
               alt="Participant with Down syndrome enjoying outdoor activities with support worker"
               width={640}
               height={520}
@@ -98,7 +98,7 @@ export default function AboutPage() {
         <div className={`container ${styles.gallery}`}>
           <Reveal>
             <Image
-              src="/images/community-cafe.jpg"
+              src="/images/community-cafe.webp"
               alt="Participant with Down syndrome on community access outing"
               width={600}
               height={400}
@@ -106,7 +106,7 @@ export default function AboutPage() {
           </Reveal>
           <Reveal delay={100}>
             <Image
-              src="/images/service-complex.jpg"
+              src="/images/service-complex.webp"
               alt="Participant with mobility support practising independence skills"
               width={600}
               height={400}
@@ -114,7 +114,7 @@ export default function AboutPage() {
           </Reveal>
           <Reveal delay={200}>
             <Image
-              src="/images/care-family.jpg"
+              src="/images/care-family.webp"
               alt="Family and support team meeting about NDIS goals"
               width={600}
               height={400}

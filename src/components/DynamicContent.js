@@ -4,12 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-    getBlogs,
-    getOffers,
-    getServices,
-    getStories,
-} from "@/lib/cms";
-import {
     DEFAULT_BLOGS,
     DEFAULT_OFFERS,
     DEFAULT_SERVICES,
@@ -23,14 +17,16 @@ function useCmsList(kind, fallback) {
         let alive = true;
         (async () => {
             try {
+                // Dynamic import keeps Firebase off the initial public bundle
+                const cms = await import("@/lib/cms");
                 let data;
-                if (kind === "blogs") data = await getBlogs({ publishedOnly: true });
+                if (kind === "blogs") data = await cms.getBlogs({ publishedOnly: true });
                 else if (kind === "stories")
-                    data = await getStories({ publishedOnly: true });
+                    data = await cms.getStories({ publishedOnly: true });
                 else if (kind === "offers")
-                    data = await getOffers({ publishedOnly: true });
+                    data = await cms.getOffers({ publishedOnly: true });
                 else if (kind === "services")
-                    data = await getServices({ publishedOnly: true });
+                    data = await cms.getServices({ publishedOnly: true });
                 if (alive && data?.length) setItems(data);
             } catch {
                 /* keep fallback */
@@ -60,7 +56,15 @@ export function BlogGrid({ styles }) {
                 >
                     <div className={styles.cover}>
                         {post.coverImage && (
-                            <Image src={post.coverImage} alt="" width={640} height={360} />
+                            <Image
+                                src={post.coverImage}
+                                alt=""
+                                width={640}
+                                height={360}
+                                sizes="(max-width: 720px) 100vw, 50vw"
+                                loading="lazy"
+                                quality={70}
+                            />
                         )}
                     </div>
                     <div className={styles.body}>
@@ -143,7 +147,15 @@ export function ServicesList({ styles }) {
                 >
                     <div className={styles.media}>
                         {s.image && (
-                            <Image src={s.image} alt="" width={520} height={360} />
+                            <Image
+                                src={s.image}
+                                alt=""
+                                width={520}
+                                height={360}
+                                sizes="(max-width: 900px) 100vw, 50vw"
+                                loading="lazy"
+                                quality={70}
+                            />
                         )}
                     </div>
                     <div className={styles.content}>

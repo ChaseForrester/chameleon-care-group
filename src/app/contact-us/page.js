@@ -33,7 +33,7 @@ export default function ContactPage() {
                     <Reveal className={styles.info}>
                         <div className={styles.photo}>
                             <Image
-                                src="/images/care-family.jpg"
+                                src="/images/care-family.webp"
                                 alt="Inclusive NDIS support meeting with participant and family"
                                 width={640}
                                 height={360}
@@ -44,6 +44,24 @@ export default function ContactPage() {
                             <a href={SITE.phoneHref} className={styles.infoCard}>
                                 <strong>Phone</strong>
                                 <span>{SITE.phone}</span>
+                            </a>
+                            <a
+                                href={SITE.googleBusiness}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.infoCard}
+                            >
+                                <strong>Google Business</strong>
+                                <span>View our Google profile</span>
+                            </a>
+                            <a
+                                href={SITE.googleReviews}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.infoCard}
+                            >
+                                <strong>Reviews</strong>
+                                <span>Leave a Google review</span>
                             </a>
                             {NOTIFY_EMAILS.map((email) => (
                                 <a

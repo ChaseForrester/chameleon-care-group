@@ -7,7 +7,7 @@ import { seedDefaultsIfEmpty, saveSettings } from "@/lib/cms";
 import { SITE } from "@/lib/seedData";
 import { useAuth } from "@/context/AuthContext";
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getClientDb } from "@/lib/firebase";
 
 export default function AdminSettingsPage() {
     const { user } = useAuth();
@@ -45,7 +45,7 @@ export default function AdminSettingsPage() {
         setError("");
         setMessage("");
         try {
-            await setDoc(doc(db, "admins", user.uid), {
+            await setDoc(doc(getClientDb(), "admins", user.uid), {
                 email: user.email,
                 role: "superadmin",
                 createdAt: new Date().toISOString(),

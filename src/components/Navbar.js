@@ -50,7 +50,7 @@ export default function Navbar() {
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.brand} aria-label="Chameleon Care Group home">
           <Image
-            src="/images/logo-mark.png"
+            src="/images/logo-nav.png"
             alt=""
             width={48}
             height={48}

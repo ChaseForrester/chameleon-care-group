@@ -65,6 +65,17 @@
   color: var(--color-navy);
 }
 
+.reviewLink {
+  background: rgba(232, 160, 30, 0.15) !important;
+  border-color: rgba(232, 160, 30, 0.45) !important;
+  color: var(--color-gold) !important;
+}
+
+.reviewLink:hover {
+  background: var(--color-gold) !important;
+  color: #06201e !important;
+}
+
 .ndis {
   width: 56px;
   height: 56px;

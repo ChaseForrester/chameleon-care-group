@@ -3,19 +3,23 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileCta from "@/components/MobileCta";
-import { AuthProvider } from "@/context/AuthContext";
 import { getSiteUrl } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-primary",
   display: "swap",
+  preload: true,
+  adjustFontFallback: true,
 });
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
+  preload: true,
+  weight: ["500", "600", "700"],
+  adjustFontFallback: true,
 });
 
 export const metadata = {
@@ -46,10 +50,10 @@ export const metadata = {
     locale: "en_AU",
     type: "website",
     siteName: "Chameleon Care Group",
-    images: [{ url: "/images/logo-mark.png", width: 1024, height: 1024 }],
+    images: [{ url: "/images/logo-mark.png", width: 400, height: 400 }],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "Chameleon Care Group",
     description: "Personalised NDIS support and nursing care across NSW.",
   },
@@ -66,10 +70,6 @@ export const metadata = {
   alternates: {
     canonical: "/",
   },
-  verification: {
-    // Add your Google Search Console verification code when available:
-    // google: "your-verification-code",
-  },
 };
 
 export const viewport = {
@@ -81,16 +81,17 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en-AU">
+      <head>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      </head>
       <body className={`${inter.variable} ${outfit.variable}`}>
-        <AuthProvider>
-          <a href="#main" className="skip-link">
-            Skip to content
-          </a>
-          <Navbar />
-          <main id="main">{children}</main>
-          <Footer />
-          <MobileCta />
-        </AuthProvider>
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
+        <Navbar />
+        <main id="main">{children}</main>
+        <Footer />
+        <MobileCta />
       </body>
     </html>
   );

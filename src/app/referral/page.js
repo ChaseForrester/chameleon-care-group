@@ -31,7 +31,7 @@ export default function ReferralPage() {
                     <Reveal className={styles.copy}>
                         <div className={styles.photo}>
                             <Image
-                                src="/images/service-complex.jpg"
+                                src="/images/service-complex.webp"
                                 alt="NDIS participant receiving personalised support"
                                 width={640}
                                 height={360}

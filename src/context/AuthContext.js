@@ -6,7 +6,7 @@ import {
     signInWithEmailAndPassword,
     signOut as firebaseSignOut,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, getClientAuth } from "@/lib/firebase";
 import { isUserAdmin } from "@/lib/cms";
 
 const AuthContext = createContext({
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, async (next) => {
+        const unsub = onAuthStateChanged(auth || getClientAuth(), async (next) => {
             setUser(next);
             if (next) {
                 // Treat any authenticated user as admin if admins doc missing (bootstrap),
@@ -49,8 +49,8 @@ export function AuthProvider({ children }) {
             isAdmin,
             loading,
             signIn: (email, password) =>
-                signInWithEmailAndPassword(auth, email, password),
-            signOut: () => firebaseSignOut(auth),
+                signInWithEmailAndPassword(auth || getClientAuth(), email, password),
+            signOut: () => firebaseSignOut(auth || getClientAuth()),
         }),
         [user, isAdmin, loading]
     );

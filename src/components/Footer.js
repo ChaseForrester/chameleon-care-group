@@ -18,7 +18,7 @@ export default function Footer() {
         <div className={styles.brand}>
           <div className={styles.brandRow}>
             <Image
-              src="/images/logo-mark.png"
+              src="/images/logo-nav.png"
               alt="Chameleon Care Group"
               width={52}
               height={52}
@@ -47,6 +47,21 @@ export default function Footer() {
               rel="noopener noreferrer"
             >
               Instagram
+            </a>
+            <a
+              href={SITE.googleBusiness}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Google
+            </a>
+            <a
+              href={SITE.googleReviews}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.reviewLink}
+            >
+              Leave a review
             </a>
           </div>
           <Image

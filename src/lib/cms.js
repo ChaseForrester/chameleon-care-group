@@ -14,13 +14,20 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { db, storage } from "./firebase";
+import { getClientDb, getClientStorage } from "./firebase";
 import {
   DEFAULT_BLOGS,
   DEFAULT_OFFERS,
   DEFAULT_SERVICES,
   DEFAULT_STORIES,
 } from "./seedData";
+
+function db() {
+  return getClientDb();
+}
+function storage() {
+  return getClientStorage();
+}
 
 function toPlain(docSnap) {
   if (!docSnap?.exists?.()) return null;
@@ -40,16 +47,16 @@ async function listCollection(name, { publishedOnly = false, orderField } = {}) 
     let q;
     if (publishedOnly && orderField) {
       q = query(
-        collection(db, name),
+        collection(db(), name),
         where("published", "==", true),
         orderBy(orderField, "desc")
       );
     } else if (publishedOnly) {
-      q = query(collection(db, name), where("published", "==", true));
+      q = query(collection(db(), name), where("published", "==", true));
     } else if (orderField) {
-      q = query(collection(db, name), orderBy(orderField, "desc"));
+      q = query(collection(db(), name), orderBy(orderField, "desc"));
     } else {
-      q = collection(db, name);
+      q = collection(db(), name);
     }
     const snap = await getDocs(q);
     return snap.docs.map((d) => toPlain(d));
@@ -72,7 +79,7 @@ export async function getBlogs({ publishedOnly = true } = {}) {
 
 export async function getBlogBySlug(slug) {
   try {
-    const snap = await getDocs(collection(db, "blogs"));
+    const snap = await getDocs(collection(db(), "blogs"));
     const found = snap.docs
       .map((d) => toPlain(d))
       .find((b) => b.slug === slug || b.id === slug);
@@ -115,7 +122,7 @@ export async function getServices({ publishedOnly = true } = {}) {
 
 export async function getPageContent(pageId) {
   try {
-    const snap = await getDoc(doc(db, "pages", pageId));
+    const snap = await getDoc(doc(db(), "pages", pageId));
     return toPlain(snap);
   } catch {
     return null;
@@ -124,7 +131,7 @@ export async function getPageContent(pageId) {
 
 export async function getSettings() {
   try {
-    const snap = await getDoc(doc(db, "settings", "site"));
+    const snap = await getDoc(doc(db(), "settings", "site"));
     return toPlain(snap);
   } catch {
     return null;
@@ -142,69 +149,69 @@ export async function saveBlog(id, data) {
     payload.publishedAt = serverTimestamp();
   }
   if (id) {
-    await updateDoc(doc(db, "blogs", id), payload);
+    await updateDoc(doc(db(), "blogs", id), payload);
     return id;
   }
   payload.createdAt = serverTimestamp();
   if (!payload.publishedAt && payload.published) {
     payload.publishedAt = serverTimestamp();
   }
-  const refDoc = await addDoc(collection(db, "blogs"), payload);
+  const refDoc = await addDoc(collection(db(), "blogs"), payload);
   return refDoc.id;
 }
 
 export async function deleteBlog(id) {
-  await deleteDoc(doc(db, "blogs", id));
+  await deleteDoc(doc(db(), "blogs", id));
 }
 
 export async function saveOffer(id, data) {
   const payload = { ...data, updatedAt: serverTimestamp() };
   if (id) {
-    await updateDoc(doc(db, "offers", id), payload);
+    await updateDoc(doc(db(), "offers", id), payload);
     return id;
   }
   payload.createdAt = serverTimestamp();
-  const refDoc = await addDoc(collection(db, "offers"), payload);
+  const refDoc = await addDoc(collection(db(), "offers"), payload);
   return refDoc.id;
 }
 
 export async function deleteOffer(id) {
-  await deleteDoc(doc(db, "offers", id));
+  await deleteDoc(doc(db(), "offers", id));
 }
 
 export async function saveStory(id, data) {
   const payload = { ...data, updatedAt: serverTimestamp() };
   if (id) {
-    await updateDoc(doc(db, "stories", id), payload);
+    await updateDoc(doc(db(), "stories", id), payload);
     return id;
   }
   payload.createdAt = serverTimestamp();
-  const refDoc = await addDoc(collection(db, "stories"), payload);
+  const refDoc = await addDoc(collection(db(), "stories"), payload);
   return refDoc.id;
 }
 
 export async function deleteStory(id) {
-  await deleteDoc(doc(db, "stories", id));
+  await deleteDoc(doc(db(), "stories", id));
 }
 
 export async function saveService(id, data) {
   const payload = { ...data, updatedAt: serverTimestamp() };
   if (id) {
-    await setDoc(doc(db, "services", id), payload, { merge: true });
+    await setDoc(doc(db(), "services", id), payload, { merge: true });
     return id;
   }
   payload.createdAt = serverTimestamp();
-  const refDoc = await addDoc(collection(db, "services"), payload);
+  const refDoc = await addDoc(collection(db(), "services"), payload);
   return refDoc.id;
 }
 
 export async function deleteService(id) {
-  await deleteDoc(doc(db, "services", id));
+  await deleteDoc(doc(db(), "services", id));
 }
 
 export async function savePage(pageId, data) {
   await setDoc(
-    doc(db, "pages", pageId),
+    doc(db(), "pages", pageId),
     { ...data, updatedAt: serverTimestamp() },
     { merge: true }
   );
@@ -212,14 +219,14 @@ export async function savePage(pageId, data) {
 
 export async function saveSettings(data) {
   await setDoc(
-    doc(db, "settings", "site"),
+    doc(db(), "settings", "site"),
     { ...data, updatedAt: serverTimestamp() },
     { merge: true }
   );
 }
 
 export async function submitInquiry(data) {
-  await addDoc(collection(db, "inquiries"), {
+  await addDoc(collection(db(), "inquiries"), {
     ...data,
     createdAt: serverTimestamp(),
     status: "new",
@@ -228,7 +235,7 @@ export async function submitInquiry(data) {
 
 export async function getInquiries() {
   try {
-    const q = query(collection(db, "inquiries"), orderBy("createdAt", "desc"));
+    const q = query(collection(db(), "inquiries"), orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
     return snap.docs.map((d) => toPlain(d));
   } catch {
@@ -239,7 +246,7 @@ export async function getInquiries() {
 export async function uploadImage(file, folder = "uploads") {
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const path = `${folder}/${Date.now()}-${safeName}`;
-  const storageRef = ref(storage, path);
+  const storageRef = ref(storage(), path);
   await uploadBytes(storageRef, file);
   return getDownloadURL(storageRef);
 }
@@ -247,7 +254,7 @@ export async function uploadImage(file, folder = "uploads") {
 export async function isUserAdmin(uid) {
   if (!uid) return false;
   try {
-    const snap = await getDoc(doc(db, "admins", uid));
+    const snap = await getDoc(doc(db(), "admins", uid));
     return snap.exists();
   } catch {
     return false;
@@ -257,11 +264,11 @@ export async function isUserAdmin(uid) {
 export async function seedDefaultsIfEmpty() {
   const results = { blogs: 0, stories: 0, services: 0, offers: 0 };
   try {
-    const blogsSnap = await getDocs(collection(db, "blogs"));
+    const blogsSnap = await getDocs(collection(db(), "blogs"));
     if (blogsSnap.empty) {
       for (const b of DEFAULT_BLOGS) {
         const { id, ...rest } = b;
-        await setDoc(doc(db, "blogs", id), {
+        await setDoc(doc(db(), "blogs", id), {
           ...rest,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
@@ -269,11 +276,11 @@ export async function seedDefaultsIfEmpty() {
         results.blogs++;
       }
     }
-    const storiesSnap = await getDocs(collection(db, "stories"));
+    const storiesSnap = await getDocs(collection(db(), "stories"));
     if (storiesSnap.empty) {
       for (const s of DEFAULT_STORIES) {
         const { id, ...rest } = s;
-        await setDoc(doc(db, "stories", id), {
+        await setDoc(doc(db(), "stories", id), {
           ...rest,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
@@ -281,11 +288,11 @@ export async function seedDefaultsIfEmpty() {
         results.stories++;
       }
     }
-    const servicesSnap = await getDocs(collection(db, "services"));
+    const servicesSnap = await getDocs(collection(db(), "services"));
     if (servicesSnap.empty) {
       for (const s of DEFAULT_SERVICES) {
         const { id, ...rest } = s;
-        await setDoc(doc(db, "services", id), {
+        await setDoc(doc(db(), "services", id), {
           ...rest,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
@@ -293,11 +300,11 @@ export async function seedDefaultsIfEmpty() {
         results.services++;
       }
     }
-    const offersSnap = await getDocs(collection(db, "offers"));
+    const offersSnap = await getDocs(collection(db(), "offers"));
     if (offersSnap.empty) {
       for (const o of DEFAULT_OFFERS) {
         const { id, ...rest } = o;
-        await setDoc(doc(db, "offers", id), {
+        await setDoc(doc(db(), "offers", id), {
           ...rest,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),

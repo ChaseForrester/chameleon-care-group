@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitInquiry } from "@/lib/cms";
 import { buildMailto } from "@/lib/emails";
 import styles from "./ContactForm.module.css";
 
@@ -37,6 +36,7 @@ export default function ContactForm({
         setStatus("loading");
         setError("");
         try {
+            const { submitInquiry } = await import("@/lib/cms");
             await submitInquiry({ ...form, source });
             setStatus("success");
             setForm({

@@ -9,7 +9,7 @@ const empty = {
     title: "",
     short: "",
     description: "",
-    image: "/images/service-1.jpg",
+    image: "/images/service-1.webp",
     features: "",
     order: 1,
     published: true,

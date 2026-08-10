@@ -73,10 +73,12 @@ export default function Home() {
           <div className={`${styles.heroVisual} animate-in delay-2`}>
             <div className={styles.heroImageWrap}>
               <Image
-                src="/images/logo-mark.png"
+                src="/images/logo-hero.webp"
                 alt="Chameleon Care Group logo"
-                width={520}
-                height={520}
+                width={320}
+                height={320}
+                sizes="(max-width: 768px) 240px, 320px"
+                quality={80}
                 className={styles.heroImage}
                 priority
               />
@@ -126,14 +128,22 @@ export default function Home() {
           </div>
 
           <div className={styles.serviceGrid}>
-            {services.map((s) => (
+            {services.map((s, idx) => (
               <Link
                 key={s.id}
                 href={`/services#${s.id}`}
                 className={`card ${styles.serviceCard}`}
               >
                 <div className={styles.serviceImg}>
-                  <Image src={s.image} alt="" width={400} height={240} />
+                  <Image
+                    src={s.image}
+                    alt=""
+                    width={400}
+                    height={240}
+                    sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw"
+                    loading={idx < 2 ? "eager" : "lazy"}
+                    quality={70}
+                  />
                 </div>
                 <div className={styles.serviceBody}>
                   <h3>{s.title}</h3>
@@ -220,10 +230,13 @@ export default function Home() {
           <div className={styles.aboutBand}>
             <div className={styles.aboutVisual}>
               <Image
-                src="/images/nurse-hero.jpg"
+                src="/images/nurse-hero.webp"
                 alt="Compassionate nursing support"
                 width={800}
                 height={438}
+                sizes="(max-width: 900px) 100vw, 50vw"
+                loading="lazy"
+                quality={70}
               />
             </div>
             <div className={styles.aboutCopy}>
@@ -272,10 +285,26 @@ export default function Home() {
               </article>
             ))}
           </div>
-          <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <div style={{ textAlign: "center", marginTop: "2rem", display: "flex", flexWrap: "wrap", gap: "0.75rem", justifyContent: "center" }}>
             <Link href="/success-stories" className="btn btn-outline">
               More stories
             </Link>
+            <a
+              href={SITE.googleReviews}
+              className="btn btn-accent"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Leave a Google review
+            </a>
+            <a
+              href={SITE.googleBusiness}
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Find us on Google
+            </a>
           </div>
         </div>
       </section>

@@ -45,6 +45,8 @@ export function orgJsonLd() {
         sameAs: [
             "https://www.facebook.com/chameleoncaregroup/",
             "https://www.instagram.com/chameleon_care_group/",
+            "https://share.google/46T8pcFGRhDaphipj",
+            "https://g.page/r/CfVeH5GtaSdMEAI/review",
         ],
         priceRange: "$$",
     };

@@ -3,11 +3,6 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-/**
- * Public Firebase web config (safe for client bundles).
- * Env vars override these so Vercel / local .env.local still work.
- * Values match project: chameleon-care-group-au
- */
 const firebaseConfig = {
   apiKey:
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
@@ -29,14 +24,45 @@ const firebaseConfig = {
     "1:356707034868:web:41f97eef13f62aef2e60a1",
 };
 
-function createFirebaseApp() {
+function getFirebaseApp() {
   if (getApps().length) return getApp();
   return initializeApp(firebaseConfig);
 }
 
-const app = createFirebaseApp();
+let _auth;
+let _db;
+let _storage;
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export default app;
+function assertClient() {
+  if (typeof window === "undefined") {
+    throw new Error("Firebase client SDK is only available in the browser");
+  }
+}
+
+export function getClientAuth() {
+  assertClient();
+  if (!_auth) _auth = getAuth(getFirebaseApp());
+  return _auth;
+}
+
+export function getClientDb() {
+  assertClient();
+  if (!_db) _db = getFirestore(getFirebaseApp());
+  return _db;
+}
+
+export function getClientStorage() {
+  assertClient();
+  if (!_storage) _storage = getStorage(getFirebaseApp());
+  return _storage;
+}
+
+// Back-compat lazy proxies for existing imports (client-only usage)
+export const auth =
+  typeof window !== "undefined" ? getAuth(getFirebaseApp()) : null;
+export const db =
+  typeof window !== "undefined" ? getFirestore(getFirebaseApp()) : null;
+export const storage =
+  typeof window !== "undefined" ? getStorage(getFirebaseApp()) : null;
+
+export default typeof window !== "undefined" ? getFirebaseApp() : null;

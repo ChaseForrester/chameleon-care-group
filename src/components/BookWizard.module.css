@@ -122,7 +122,6 @@
     background: var(--gradient-warm);
     font-size: 1.6rem;
     margin-bottom: 0.85rem;
-    animation: float 3.5s ease-in-out infinite;
 }
 
 .stepHead h2 {
