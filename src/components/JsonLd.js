@@ -8,15 +8,16 @@ export default function JsonLd({ data }) {
 }
 
 export function orgJsonLd() {
+    const base = "https://www.chameleoncaregroup.com.au";
     return {
         "@context": "https://schema.org",
-        "@type": "HomeAndConstructionBusiness",
-        "@id": "https://chameleoncaregroup.com.au/#organization",
+        "@type": "MedicalBusiness",
+        "@id": `${base}/#organization`,
         name: "Chameleon Care Group",
         alternateName: "CCG",
-        url: "https://chameleoncaregroup.com.au",
-        logo: "https://chameleoncaregroup.com.au/images/logo-mark.png",
-        image: "https://chameleoncaregroup.com.au/images/logo-mark.png",
+        url: base,
+        logo: `${base}/images/logo-mark.png`,
+        image: `${base}/images/logo-mark.png`,
         telephone: "+61430068300",
         email: "chameleonnursingcare@gmail.com",
         description:
