@@ -73,6 +73,9 @@ export default function Footer() {
           <Link href="/referral">Referral</Link>
           <Link href="/contact">Contact</Link>
           <Link href="/offers">Offers</Link>
+          <Link href="/laws">Laws & PDFs</Link>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/terms">Terms & Conditions</Link>
           <Link href="/admin">Admin login</Link>
         </div>
 
@@ -94,7 +97,14 @@ export default function Footer() {
           <div className={styles.copy}>
             <p>
               © {new Date().getFullYear()} Chameleon Care Group. All rights
-              reserved.
+              reserved.{" "}
+              <Link href="/privacy">Privacy</Link>
+              {" · "}
+              <Link href="/terms">Terms</Link>
+              {" · "}
+              <Link href="/laws">Laws</Link>
+              {" · "}
+              <Link href="/sitemap.xml">Sitemap</Link>
             </p>
             <p>
               Built by{" "}

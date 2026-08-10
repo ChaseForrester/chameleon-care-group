@@ -220,7 +220,7 @@ export default function Home() {
           <div className={styles.aboutBand}>
             <div className={styles.aboutVisual}>
               <Image
-                src="/images/nurse-hero.png"
+                src="/images/nurse-hero.jpg"
                 alt="Compassionate nursing support"
                 width={800}
                 height={438}

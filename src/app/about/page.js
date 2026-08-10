@@ -47,7 +47,7 @@ export default function AboutPage() {
           </div>
           <div className={styles.imageCard}>
             <Image
-              src="/images/chameleon.png"
+              src="/images/care-meeting.jpg"
               alt="Chameleon Care Group brand illustration"
               width={520}
               height={520}

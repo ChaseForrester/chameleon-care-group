@@ -56,9 +56,19 @@ export const metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   alternates: {
     canonical: "/",
+  },
+  verification: {
+    // Add your Google Search Console verification code when available:
+    // google: "your-verification-code",
   },
 };
 

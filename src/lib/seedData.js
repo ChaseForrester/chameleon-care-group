@@ -37,7 +37,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Personal care, medication management, general domestic assistance, and support to appointments — delivered with respect and flexibility in the comfort of your home.",
     icon: "heart",
-    image: "/images/service-1.png",
+    image: "/images/service-1.jpg",
     features: [
       "Personal care & hygiene support",
       "Medication management",
@@ -55,7 +55,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Develop and enhance everyday skills while accessing the community in ways that match your goals, interests, and NDIS plan.",
     icon: "users",
-    image: "/images/service-2.png",
+    image: "/images/service-2.jpg",
     features: [
       "Community participation",
       "Skill building programs",
@@ -73,7 +73,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Flexible respite and overnight care designed to support participants and give families peace of mind — day or night.",
     icon: "moon",
-    image: "/images/service-3.png",
+    image: "/images/service-3.jpg",
     features: [
       "In-home respite",
       "Overnight support",
@@ -91,7 +91,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Clinical nursing, behavioural management, palliative support, and paediatric disability care delivered by a professional, compassionate team.",
     icon: "stethoscope",
-    image: "/images/nurse-hero.png",
+    image: "/images/nurse-hero.jpg",
     features: [
       "In-home nursing",
       "Behavioural management",
@@ -109,7 +109,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Comprehensive continence assessments for NDIS participants, with clear recommendations and management plans that support dignity and independence.",
     icon: "clipboard",
-    image: "/images/ndis.png",
+    image: "/images/care-meeting.jpg",
     features: [
       "NDIS-compliant assessments",
       "Product recommendations",
@@ -127,7 +127,7 @@ export const DEFAULT_SERVICES = [
     description:
       "Detailed clinical reporting for NDIS plan reviews, ensuring participants receive appropriate funding and care packages.",
     icon: "file",
-    image: "/images/design-accent.png",
+    image: "/images/care-meeting.jpg",
     features: [
       "NDIS-ready clinical justifications",
       "Complex care documentation",
@@ -196,7 +196,7 @@ Every participant has different goals, routines, and support needs. We build ind
 ## Ready to get started?
 
 Contact our team for a conversation about how we can support you or your loved one.`,
-    coverImage: "/images/nurse-hero.png",
+    coverImage: "/images/nurse-hero.jpg",
     author: "Chameleon Care Group",
     published: true,
     publishedAt: "2026-01-15T00:00:00.000Z",

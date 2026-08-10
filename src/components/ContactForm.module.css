@@ -1,6 +1,6 @@
 .form {
     background: #fff;
-    border: 1px solid rgba(13, 92, 84, 0.08);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: 1.75rem;
     box-shadow: var(--shadow-md);
@@ -19,7 +19,7 @@
 
 .successBox {
     background: var(--color-primary-soft);
-    border: 1px solid rgba(13, 92, 84, 0.15);
+    border: 1px solid rgba(13, 107, 122, 0.15);
     border-radius: var(--radius-lg);
     padding: 2rem;
     text-align: center;
@@ -32,6 +32,25 @@
 
 .successBox p {
     margin-bottom: 1.25rem;
+}
+
+.consent {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.consent input {
+    width: 18px;
+    height: 18px;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+    accent-color: var(--color-teal);
 }
 
 @media (max-width: 640px) {

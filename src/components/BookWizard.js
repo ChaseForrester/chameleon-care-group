@@ -6,6 +6,7 @@ import styles from "./BookWizard.module.css";
 
 const STEPS = [
     { id: "welcome", title: "Welcome", icon: "👋" },
+    { id: "ndis", title: "NDIS", icon: "♿" },
     { id: "medicare", title: "Medicare", icon: "📚" },
     { id: "gender", title: "Gender", icon: "❓" },
     { id: "health", title: "Health", icon: "🩺" },
@@ -15,11 +16,28 @@ const STEPS = [
     { id: "review", title: "Submit", icon: "🙌" },
 ];
 
+const SERVICE_OPTIONS = [
+    "Personal care",
+    "Community access",
+    "Respite / overnight",
+    "Nursing / clinical",
+    "Continence assessment",
+    "Clinical reporting",
+    "Not sure yet",
+];
+
 const empty = {
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
+    dateOfBirth: "",
+    preferredSuburb: "",
+    ndisNumber: "",
+    fundingType: "",
+    planManagerName: "",
+    preferredServices: "",
+    preferredContactTime: "",
     medicareNumber: "",
     medicareIrn: "",
     gender: "",
@@ -36,6 +54,8 @@ const empty = {
     contactFullName: "",
     contactMobile: "",
     contactEmail: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
     anythingElse: "",
     documentNames: "",
     organisationName: "",
@@ -43,6 +63,7 @@ const empty = {
     invoiceEmail: "",
     planDates: "",
     lineItem: "",
+    privacyConsent: false,
     agreed: false,
 };
 
@@ -113,11 +134,22 @@ export default function BookWizard() {
     const validate = () => {
         const s = STEPS[step].id;
         if (s === "welcome") {
-            if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) {
-                return "Please complete all required fields.";
+            if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.phone.trim()) {
+                return "Please complete all required fields (including phone).";
             }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
                 return "Please enter a valid email address.";
+            }
+            if (!form.preferredSuburb.trim()) {
+                return "Please enter the suburb where support is needed.";
+            }
+        }
+        if (s === "ndis") {
+            if (!form.fundingType) {
+                return "Please select how supports will be funded.";
+            }
+            if (!form.preferredServices) {
+                return "Please select at least one preferred service.";
             }
         }
         if (s === "gender" && !form.gender) {
@@ -153,6 +185,9 @@ export default function BookWizard() {
             }
         }
         if (s === "review") {
+            if (!form.privacyConsent) {
+                return "Please consent to our Privacy Policy before submitting.";
+            }
             if (!form.agreed) {
                 return "Please agree to the terms before submitting.";
             }
@@ -265,6 +300,12 @@ export default function BookWizard() {
                             <p>Please fill the following fields to get started.</p>
                         </>
                     )}
+                    {s.id === "ndis" && (
+                        <>
+                            <h2>NDIS & support needs</h2>
+                            <p>Tell us about funding and the supports you&apos;re looking for.</p>
+                        </>
+                    )}
                     {s.id === "medicare" && (
                         <>
                             <h2>Medicare number</h2>
@@ -338,16 +379,27 @@ export default function BookWizard() {
                                     />
                                 </Field>
                             </div>
-                            <Field label="Phone number">
-                                <input
-                                    name="phone"
-                                    type="tel"
-                                    value={form.phone}
-                                    onChange={onChange}
-                                    autoComplete="tel"
-                                    placeholder="04xx xxx xxx"
-                                />
-                            </Field>
+                            <div className={styles.row}>
+                                <Field label="Phone number" required>
+                                    <input
+                                        name="phone"
+                                        type="tel"
+                                        value={form.phone}
+                                        onChange={onChange}
+                                        autoComplete="tel"
+                                        placeholder="04xx xxx xxx"
+                                        required
+                                    />
+                                </Field>
+                                <Field label="Date of birth">
+                                    <input
+                                        name="dateOfBirth"
+                                        type="date"
+                                        value={form.dateOfBirth}
+                                        onChange={onChange}
+                                    />
+                                </Field>
+                            </div>
                             <Field label="E-mail address" required>
                                 <input
                                     name="email"
@@ -357,6 +409,111 @@ export default function BookWizard() {
                                     autoComplete="email"
                                     required
                                 />
+                            </Field>
+                            <Field
+                                label="Suburb where support is needed"
+                                required
+                                hint="e.g. Cronulla, Miranda, Wollongong, Gosford"
+                            >
+                                <input
+                                    name="preferredSuburb"
+                                    value={form.preferredSuburb}
+                                    onChange={onChange}
+                                    required
+                                />
+                            </Field>
+                            <Field label="Preferred contact time">
+                                <select
+                                    name="preferredContactTime"
+                                    value={form.preferredContactTime}
+                                    onChange={onChange}
+                                >
+                                    <option value="">Select…</option>
+                                    <option value="Morning">Morning</option>
+                                    <option value="Afternoon">Afternoon</option>
+                                    <option value="Anytime">Anytime</option>
+                                </select>
+                            </Field>
+                        </>
+                    )}
+
+                    {s.id === "ndis" && (
+                        <>
+                            <Field label="NDIS participant number (if known)">
+                                <input
+                                    name="ndisNumber"
+                                    value={form.ndisNumber}
+                                    onChange={onChange}
+                                    placeholder="e.g. 43xxxxxxx"
+                                />
+                            </Field>
+                            <Field label="How will supports be funded?" required>
+                                <div className="choice-grid">
+                                    {[
+                                        "NDIS – Agency managed",
+                                        "NDIS – Plan managed",
+                                        "NDIS – Self managed",
+                                        "Private / other",
+                                        "Not sure yet",
+                                    ].map((opt) => (
+                                        <label
+                                            key={opt}
+                                            className={`choice ${form.fundingType === opt ? "selected" : ""
+                                                }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="fundingType"
+                                                value={opt}
+                                                checked={form.fundingType === opt}
+                                                onChange={onChange}
+                                            />
+                                            {opt}
+                                        </label>
+                                    ))}
+                                </div>
+                            </Field>
+                            <Field label="Plan manager name (if plan managed)">
+                                <input
+                                    name="planManagerName"
+                                    value={form.planManagerName}
+                                    onChange={onChange}
+                                />
+                            </Field>
+                            <Field label="Preferred services" required>
+                                <div className="choice-grid">
+                                    {SERVICE_OPTIONS.map((opt) => {
+                                        const selected = (form.preferredServices || "")
+                                            .split("|")
+                                            .filter(Boolean)
+                                            .includes(opt);
+                                        return (
+                                            <label
+                                                key={opt}
+                                                className={`choice ${selected ? "selected" : ""}`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selected}
+                                                    onChange={() => {
+                                                        const cur = (form.preferredServices || "")
+                                                            .split("|")
+                                                            .filter(Boolean);
+                                                        const next = selected
+                                                            ? cur.filter((x) => x !== opt)
+                                                            : [...cur, opt];
+                                                        setForm((f) => ({
+                                                            ...f,
+                                                            preferredServices: next.join("|"),
+                                                        }));
+                                                        setError("");
+                                                    }}
+                                                />
+                                                {opt}
+                                            </label>
+                                        );
+                                    })}
+                                </div>
                             </Field>
                         </>
                     )}
@@ -534,6 +691,23 @@ export default function BookWizard() {
                                     />
                                 </Field>
                             </div>
+                            <div className={styles.row}>
+                                <Field label="Emergency contact name">
+                                    <input
+                                        name="emergencyContactName"
+                                        value={form.emergencyContactName}
+                                        onChange={onChange}
+                                    />
+                                </Field>
+                                <Field label="Emergency contact phone">
+                                    <input
+                                        name="emergencyContactPhone"
+                                        type="tel"
+                                        value={form.emergencyContactPhone}
+                                        onChange={onChange}
+                                    />
+                                </Field>
+                            </div>
                             <Field label="Is there anything else we should know?">
                                 <textarea
                                     name="anythingElse"
@@ -615,6 +789,16 @@ export default function BookWizard() {
                                     <strong>Phone:</strong> {form.phone || "—"}
                                 </p>
                                 <p>
+                                    <strong>Suburb:</strong> {form.preferredSuburb || "—"}
+                                </p>
+                                <p>
+                                    <strong>Funding:</strong> {form.fundingType || "—"}
+                                </p>
+                                <p>
+                                    <strong>Services:</strong>{" "}
+                                    {(form.preferredServices || "").split("|").filter(Boolean).join(", ") || "—"}
+                                </p>
+                                <p>
                                     <strong>Contact:</strong> {form.contactFullName} (
                                     {form.contactRole})
                                 </p>
@@ -625,15 +809,34 @@ export default function BookWizard() {
                             <label className={styles.agree}>
                                 <input
                                     type="checkbox"
+                                    name="privacyConsent"
+                                    checked={form.privacyConsent}
+                                    onChange={onChange}
+                                />
+                                <span>
+                                    I consent to Chameleon Care Group collecting and using the
+                                    personal and health information in this form in accordance with
+                                    the{" "}
+                                    <a href="/privacy" target="_blank" rel="noopener noreferrer">
+                                        Privacy Policy
+                                    </a>
+                                    .
+                                </span>
+                            </label>
+                            <label className={styles.agree}>
+                                <input
+                                    type="checkbox"
                                     name="agreed"
                                     checked={form.agreed}
                                     onChange={onChange}
                                 />
                                 <span>
-                                    I have read, understand, and agree to the terms and conditions.
-                                    By submitting, I acknowledge that the information provided is
-                                    accurate and I consent to Chameleon Care Group contacting me
-                                    about this application.
+                                    I have read and agree to the{" "}
+                                    <a href="/terms" target="_blank" rel="noopener noreferrer">
+                                        Terms and Conditions
+                                    </a>
+                                    . The information provided is accurate and I consent to being
+                                    contacted about this application.
                                 </span>
                             </label>
                         </div>

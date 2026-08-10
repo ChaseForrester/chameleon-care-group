@@ -5,43 +5,48 @@ import { getSiteUrl } from "@/lib/site";
 const BASE = getSiteUrl();
 
 export default function sitemap() {
+    const now = new Date();
+
     const staticRoutes = [
-        "",
-        "/about",
-        "/services",
-        "/success-stories",
-        "/blog",
-        "/offers",
-        "/contact",
-        "/book",
-        "/referral",
-        "/locations",
-    ].map((path) => ({
+        { path: "", priority: 1, changeFrequency: "weekly" },
+        { path: "/about", priority: 0.9, changeFrequency: "monthly" },
+        { path: "/services", priority: 0.95, changeFrequency: "monthly" },
+        { path: "/book", priority: 0.95, changeFrequency: "weekly" },
+        { path: "/contact", priority: 0.9, changeFrequency: "monthly" },
+        { path: "/locations", priority: 0.9, changeFrequency: "weekly" },
+        { path: "/success-stories", priority: 0.8, changeFrequency: "monthly" },
+        { path: "/blog", priority: 0.8, changeFrequency: "weekly" },
+        { path: "/offers", priority: 0.7, changeFrequency: "weekly" },
+        { path: "/referral", priority: 0.85, changeFrequency: "monthly" },
+        { path: "/privacy", priority: 0.5, changeFrequency: "yearly" },
+        { path: "/terms", priority: 0.5, changeFrequency: "yearly" },
+        { path: "/laws", priority: 0.75, changeFrequency: "monthly" },
+    ].map(({ path, priority, changeFrequency }) => ({
         url: `${BASE}${path}`,
-        lastModified: new Date(),
-        changeFrequency: path === "" ? "weekly" : "monthly",
-        priority: path === "" ? 1 : 0.8,
+        lastModified: now,
+        changeFrequency,
+        priority,
     }));
 
     const blogs = DEFAULT_BLOGS.map((b) => ({
         url: `${BASE}/blog/${b.slug}`,
         lastModified: new Date(b.publishedAt || Date.now()),
         changeFrequency: "monthly",
-        priority: 0.6,
+        priority: 0.65,
     }));
 
     const regions = REGIONS.flatMap((r) => {
         const regionEntry = {
             url: `${BASE}/locations/${r.id}`,
-            lastModified: new Date(),
+            lastModified: now,
             changeFrequency: "monthly",
-            priority: 0.75,
+            priority: 0.8,
         };
         const suburbs = r.suburbs.map((s) => ({
             url: `${BASE}/locations/${r.id}/${slugifySuburb(s)}`,
-            lastModified: new Date(),
+            lastModified: now,
             changeFrequency: "monthly",
-            priority: 0.65,
+            priority: 0.7,
         }));
         return [regionEntry, ...suburbs];
     });
