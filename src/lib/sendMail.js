@@ -19,7 +19,7 @@ function getFromAddress() {
     return (
         process.env.RESEND_FROM ||
         process.env.EMAIL_FROM ||
-        "Chameleon Care Group <onboarding@resend.dev>"
+        "Chameleon <enquiries@chameleoncaregroup.com.au>"
     );
 }
 

@@ -15,15 +15,25 @@
   margin-bottom: 1.5rem;
 }
 
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.25rem;
+}
+
 .meta strong {
   display: block;
   color: var(--color-bg-dark);
-  margin-bottom: 0.15rem;
+  font-size: 1rem;
+  line-height: 1.3;
 }
 
 .meta span {
+  display: block;
   font-size: 0.9rem;
   color: var(--color-text-muted);
+  line-height: 1.35;
 }
 
 .note {

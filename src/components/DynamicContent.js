@@ -9,6 +9,17 @@ import {
     DEFAULT_SERVICES,
     DEFAULT_STORIES,
 } from "@/lib/seedData";
+import ShareButtons from "@/components/ShareButtons";
+
+function cleanStoryText(value) {
+    if (value == null) return "";
+    return String(value)
+        .replace(/[\u2013\u2014\u2012\u2015\u2212]/g, "-")
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/\s+/g, " ")
+        .trim();
+}
 
 function useCmsList(kind, fallback) {
     const [items, setItems] = useState(fallback);
@@ -63,43 +74,54 @@ export function BlogGrid({ styles }) {
 
     return (
         <div className={styles.grid}>
-            {items.map((post) => (
-                <Link
-                    key={post.id}
-                    href={`/blog/${post.slug || post.id}`}
-                    className={`card ${styles.card}`}
-                >
-                    <div className={styles.cover}>
-                        {post.coverImage && (
-                            <Image
-                                src={
-                                    post.coverImage.endsWith(".webp")
-                                        ? post.coverImage.replace(".webp", ".jpg")
-                                        : post.coverImage
-                                }
-                                alt={post.title || ""}
-                                width={640}
-                                height={360}
-                                sizes="(max-width: 720px) 100vw, 50vw"
-                                loading="lazy"
-                                quality={80}
+            {items.map((post) => {
+                const href = `/blog/${post.slug || post.id}`;
+                return (
+                    <article key={post.id} className={`card ${styles.card}`}>
+                        <Link href={href} className={styles.cardLink}>
+                            <div className={styles.cover}>
+                                {post.coverImage && (
+                                    <Image
+                                        src={
+                                            post.coverImage.endsWith(".webp")
+                                                ? post.coverImage.replace(".webp", ".jpg")
+                                                : post.coverImage
+                                        }
+                                        alt={post.title || ""}
+                                        width={640}
+                                        height={360}
+                                        sizes="(max-width: 720px) 100vw, 50vw"
+                                        loading="lazy"
+                                        quality={80}
+                                    />
+                                )}
+                            </div>
+                            <div className={styles.body}>
+                                <div className={styles.tags}>
+                                    {(post.tags || []).slice(0, 3).map((t) => (
+                                        <span key={t} className="badge">
+                                            {t}
+                                        </span>
+                                    ))}
+                                </div>
+                                <h2>{post.title}</h2>
+                                <p>{post.excerpt}</p>
+                                <span className={styles.read}>Read article →</span>
+                            </div>
+                        </Link>
+                        <div className={styles.cardShare}>
+                            <ShareButtons
+                                url={href}
+                                title={post.title}
+                                text={post.excerpt || ""}
+                                image={post.coverImage || ""}
+                                compact
+                                label="Share"
                             />
-                        )}
-                    </div>
-                    <div className={styles.body}>
-                        <div className={styles.tags}>
-                            {(post.tags || []).slice(0, 3).map((t) => (
-                                <span key={t} className="badge">
-                                    {t}
-                                </span>
-                            ))}
                         </div>
-                        <h2>{post.title}</h2>
-                        <p>{post.excerpt}</p>
-                        <span className={styles.read}>Read article →</span>
-                    </div>
-                </Link>
-            ))}
+                    </article>
+                );
+            })}
         </div>
     );
 }
@@ -114,15 +136,31 @@ export function StoriesGrid({ styles }) {
         <div className={styles.grid}>
             {items
                 .filter((s) => s.consent !== false)
-                .map((s) => (
-                    <article key={s.id} className={`card ${styles.card}`}>
-                        <p className={styles.quote}>&ldquo;{s.quote}&rdquo;</p>
-                        <div className={styles.meta}>
-                            <strong>{s.name}</strong>
-                            <span>{s.location}</span>
-                        </div>
-                    </article>
-                ))}
+                .map((s) => {
+                    const name = cleanStoryText(s.name);
+                    const location = cleanStoryText(s.location).replace(/\s*-\s*/g, ", ");
+                    const quote = cleanStoryText(s.quote);
+                    const shareTitle = `${name} - Success story | Chameleon Care Group`;
+                    const shareText = quote
+                        ? `"${quote}" - ${name}${location ? `, ${location}` : ""}`
+                        : shareTitle;
+                    return (
+                        <article key={s.id} className={`card ${styles.card}`}>
+                            <p className={styles.quote}>&ldquo;{quote}&rdquo;</p>
+                            <div className={styles.meta}>
+                                <strong>{name}</strong>
+                                {location ? <span>{location}</span> : null}
+                            </div>
+                            <ShareButtons
+                                url="/success-stories"
+                                title={shareTitle}
+                                text={shareText}
+                                compact
+                                label="Share this story"
+                            />
+                        </article>
+                    );
+                })}
         </div>
     );
 }

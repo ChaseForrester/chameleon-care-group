@@ -33,3 +33,10 @@
     max-height: 420px;
     object-fit: cover;
 }
+
+.shareFooter {
+    max-width: 720px;
+    margin: 2.5rem auto 0;
+    padding-top: 1.75rem;
+    border-top: 1px solid rgba(13, 92, 84, 0.1);
+}

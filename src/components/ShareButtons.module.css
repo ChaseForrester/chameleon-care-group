@@ -1,0 +1,171 @@
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 1.5rem;
+}
+
+.compact {
+    margin-top: 1rem;
+    gap: 0.4rem;
+}
+
+.label {
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(13, 92, 84, 0.14);
+    background: #fff;
+    color: var(--color-bg-dark);
+    border-radius: var(--radius-full);
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+        transform 0.15s ease;
+    line-height: 1;
+}
+
+.compact .btn {
+    padding: 0.45rem;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+}
+
+.btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.btnLabel {
+    white-space: nowrap;
+}
+
+/* Brand hover accents */
+.facebook:hover {
+    color: #1877f2;
+    border-color: rgba(24, 119, 242, 0.4);
+    background: #eff6ff;
+}
+
+.pinterest:hover {
+    color: #e60023;
+    border-color: rgba(230, 0, 35, 0.35);
+    background: #fff1f2;
+}
+
+.instagram:hover {
+    color: #c13584;
+    border-color: rgba(193, 53, 132, 0.35);
+    background: #fdf2f8;
+}
+
+.email:hover {
+    color: var(--color-primary);
+    border-color: rgba(13, 92, 84, 0.35);
+    background: var(--color-primary-soft);
+}
+
+.copy:hover {
+    color: #0f172a;
+    border-color: rgba(15, 23, 42, 0.25);
+    background: #f8fafc;
+}
+
+.native {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+.native:hover {
+    color: #fff;
+    background: var(--color-bg-dark);
+    border-color: var(--color-bg-dark);
+}
+
+.status {
+    min-height: 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.statusVisible {
+    opacity: 1;
+}
+
+/* On dark heroes (blog post header) */
+.onDark .label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.onDark .btn {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.onDark .btn:hover {
+    background: #fff;
+    color: var(--color-primary);
+    border-color: #fff;
+}
+
+.onDark .native {
+    background: #fff;
+    color: var(--color-primary);
+    border-color: #fff;
+}
+
+.onDark .native:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.onDark .status {
+    color: #a7f3d0;
+}
+
+@media (max-width: 520px) {
+    .btnLabel {
+        display: none;
+    }
+
+    .btn {
+        padding: 0.5rem;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+    }
+}

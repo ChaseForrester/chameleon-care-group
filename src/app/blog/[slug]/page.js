@@ -2,7 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { DEFAULT_BLOGS } from "@/lib/seedData";
+import { getSiteUrl } from "@/lib/site";
+import ShareButtons from "@/components/ShareButtons";
 import styles from "./page.module.css";
+import shareStyles from "@/components/ShareButtons.module.css";
 
 export function generateStaticParams() {
     return DEFAULT_BLOGS.map((b) => ({ slug: b.slug }));
@@ -24,6 +27,13 @@ export default async function BlogPostPage({ params }) {
     if (!post) notFound();
 
     const paragraphs = (post.content || "").split("\n\n");
+    const siteUrl = getSiteUrl();
+    const shareUrl = `${siteUrl}/blog/${post.slug || slug}`;
+    const shareImage = post.coverImage
+        ? post.coverImage.startsWith("http")
+            ? post.coverImage
+            : `${siteUrl}${post.coverImage}`
+        : "";
 
     return (
         <>
@@ -46,6 +56,14 @@ export default async function BlogPostPage({ params }) {
                             </span>
                         )}
                     </div>
+                    <ShareButtons
+                        url={shareUrl}
+                        title={post.title}
+                        text={post.excerpt || ""}
+                        image={shareImage}
+                        label="Share this article"
+                        className={shareStyles.onDark}
+                    />
                 </div>
             </section>
 
@@ -74,6 +92,16 @@ export default async function BlogPostPage({ params }) {
                             return <p key={i}>{block}</p>;
                         })}
                     </article>
+
+                    <div className={styles.shareFooter}>
+                        <ShareButtons
+                            url={shareUrl}
+                            title={post.title}
+                            text={post.excerpt || ""}
+                            image={shareImage}
+                            label="Share this article"
+                        />
+                    </div>
                 </div>
             </section>
         </>

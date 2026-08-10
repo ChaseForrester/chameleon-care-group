@@ -8,6 +8,7 @@ import {
     saveStory,
     deleteStory,
     importDefaultStories,
+    normalizeStoryFields,
 } from "@/lib/cms";
 
 const empty = {
@@ -18,6 +19,17 @@ const empty = {
     consent: true,
 };
 
+function storyToForm(item) {
+    const n = normalizeStoryFields(item || {});
+    return {
+        name: n.name || "",
+        location: n.location || "",
+        quote: n.quote || "",
+        published: n.published !== false,
+        consent: n.consent !== false,
+    };
+}
+
 export default function AdminStoriesPage() {
     const [items, setItems] = useState([]);
     const [form, setForm] = useState(empty);
@@ -26,8 +38,16 @@ export default function AdminStoriesPage() {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
-    const load = async () =>
-        setItems((await getStories({ publishedOnly: false })) || []);
+    const load = async () => {
+        try {
+            const data = await getStories({ publishedOnly: false });
+            setItems((data || []).map((s) => normalizeStoryFields(s)));
+        } catch (err) {
+            setError(err?.message || "Could not load stories.");
+            setItems([]);
+        }
+    };
+
     useEffect(() => {
         load();
     }, []);
@@ -39,7 +59,16 @@ export default function AdminStoriesPage() {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        if (!form.consent) {
+        const cleaned = normalizeStoryFields(form);
+        if (!cleaned.name.trim()) {
+            setError("Name is required.");
+            return;
+        }
+        if (!cleaned.quote.trim()) {
+            setError("Quote / story is required.");
+            return;
+        }
+        if (!cleaned.consent) {
             setError("Consent is required before publishing a success story.");
             return;
         }
@@ -47,12 +76,14 @@ export default function AdminStoriesPage() {
         setError("");
         setMessage("");
         try {
-            await saveStory(editId, {
-                ...form,
-                published: !!form.published,
-                consent: !!form.consent,
-            });
-            setMessage(editId ? "Story updated." : "Story added.");
+            await saveStory(editId, cleaned);
+            setMessage(
+                editId
+                    ? "Story updated and published."
+                    : cleaned.published
+                        ? "Story added and published on the website."
+                        : "Story saved as draft."
+            );
             setForm(empty);
             setEditId(null);
             await load();
@@ -70,8 +101,10 @@ export default function AdminStoriesPage() {
         try {
             const count = await importDefaultStories();
             setMessage(
-                `Imported ${count} success stories from the original website (Erica, Kim, Kelly, Ryan). They are published and live on /success-stories.`
+                `Imported ${count} stories (Erica, Kim, Kelly, Ryan) with clean locations. They are published on /success-stories.`
             );
+            setForm(empty);
+            setEditId(null);
             await load();
         } catch (err) {
             setError(
@@ -83,10 +116,18 @@ export default function AdminStoriesPage() {
         }
     };
 
+    const onEdit = (item) => {
+        setError("");
+        setMessage("");
+        setEditId(item.id);
+        setForm(storyToForm(item));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     return (
         <AdminShell
             title="Success stories"
-            subtitle="Participant and family stories from the website — only publish with consent."
+            subtitle="Participant and family stories — only publish with consent."
             action={
                 <button
                     type="button"
@@ -94,7 +135,7 @@ export default function AdminStoriesPage() {
                     disabled={busy}
                     onClick={onImportWebflow}
                 >
-                    Import original site stories
+                    Import / fix original stories
                 </button>
             }
         >
@@ -108,34 +149,53 @@ export default function AdminStoriesPage() {
                 {error && (
                     <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>
                 )}
-                <p style={{ marginBottom: "1rem", fontSize: "0.9rem", color: "var(--color-text-muted)" }}>
-                    The original Webflow site featured four stories (Erica, Kim, Kelly and Ryan).
-                    Use <strong>Import original site stories</strong> to load them into Firestore
-                    and publish them on the live Success Stories page.
+                <p
+                    style={{
+                        marginBottom: "1rem",
+                        fontSize: "0.9rem",
+                        color: "var(--color-text-muted)",
+                    }}
+                >
+                    Name and location are separate fields (e.g. name <strong>Ryan</strong>,
+                    location <strong>Central Coast, Gosford</strong>). Use{" "}
+                    <strong>Import / fix original stories</strong> to repair the four Webflow
+                    stories if a dash or character looks wrong.
                 </p>
                 <form onSubmit={onSubmit}>
                     <div className={styles.formGrid}>
                         <div className="form-field">
-                            <label>Name / alias</label>
-                            <input name="name" required value={form.name} onChange={onChange} />
+                            <label htmlFor="story-name">Name / alias</label>
+                            <input
+                                id="story-name"
+                                name="name"
+                                required
+                                value={form.name}
+                                onChange={onChange}
+                                placeholder="e.g. Ryan"
+                                autoComplete="off"
+                            />
                         </div>
                         <div className="form-field">
-                            <label>Location</label>
+                            <label htmlFor="story-location">Location</label>
                             <input
+                                id="story-location"
                                 name="location"
                                 value={form.location}
                                 onChange={onChange}
-                                placeholder="Sutherland Shire"
+                                placeholder="e.g. Central Coast, Gosford"
+                                autoComplete="off"
                             />
                         </div>
                         <div className="form-field full">
-                            <label>Quote / story</label>
+                            <label htmlFor="story-quote">Quote / story</label>
                             <textarea
+                                id="story-quote"
                                 name="quote"
                                 required
                                 value={form.quote}
                                 onChange={onChange}
                                 style={{ minHeight: 120 }}
+                                placeholder="Their words…"
                             />
                         </div>
                     </div>
@@ -143,7 +203,7 @@ export default function AdminStoriesPage() {
                         <input
                             type="checkbox"
                             name="consent"
-                            checked={form.consent}
+                            checked={!!form.consent}
                             onChange={onChange}
                         />
                         Participant / family consent obtained
@@ -152,14 +212,18 @@ export default function AdminStoriesPage() {
                         <input
                             type="checkbox"
                             name="published"
-                            checked={form.published}
+                            checked={!!form.published}
                             onChange={onChange}
                         />
                         Published on website
                     </label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
                         <button type="submit" className="btn btn-primary" disabled={busy}>
-                            {busy ? "Saving…" : editId ? "Update story" : "Save story"}
+                            {busy
+                                ? "Saving…"
+                                : editId
+                                    ? "Update story"
+                                    : "Save story"}
                         </button>
                         {editId && (
                             <button
@@ -169,6 +233,7 @@ export default function AdminStoriesPage() {
                                 onClick={() => {
                                     setEditId(null);
                                     setForm(empty);
+                                    setError("");
                                 }}
                             >
                                 Cancel edit
@@ -186,8 +251,8 @@ export default function AdminStoriesPage() {
                     <div className={styles.inquiryEmpty} style={{ marginBottom: "1rem" }}>
                         <strong>No stories in Firestore yet</strong>
                         <p>
-                            Click <strong>Import original site stories</strong> to add Erica, Kim,
-                            Kelly and Ryan from chameleoncaregroup.webflow.io.
+                            Click <strong>Import / fix original stories</strong> to add Erica,
+                            Kim, Kelly and Ryan.
                         </p>
                     </div>
                 )}
@@ -209,7 +274,7 @@ export default function AdminStoriesPage() {
                                         <strong>{item.name}</strong>
                                         {item.consent ? (
                                             <div style={{ fontSize: "0.75rem", color: "#047857" }}>
-                                                Consent ✓
+                                                Consent yes
                                             </div>
                                         ) : (
                                             <div style={{ fontSize: "0.75rem", color: "#b91c1c" }}>
@@ -222,7 +287,7 @@ export default function AdminStoriesPage() {
                                         <span style={{ fontSize: "0.88rem", lineHeight: 1.45 }}>
                                             {item.quote
                                                 ? item.quote.length > 140
-                                                    ? `${item.quote.slice(0, 140)}…`
+                                                    ? `${item.quote.slice(0, 140)}...`
                                                     : item.quote
                                                 : "—"}
                                         </span>
@@ -237,20 +302,7 @@ export default function AdminStoriesPage() {
                                     </td>
                                     <td>
                                         <div className={styles.actions}>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setEditId(item.id);
-                                                    setForm({
-                                                        name: item.name || "",
-                                                        location: item.location || "",
-                                                        quote: item.quote || "",
-                                                        published: !!item.published,
-                                                        consent: !!item.consent,
-                                                    });
-                                                    window.scrollTo({ top: 0, behavior: "smooth" });
-                                                }}
-                                            >
+                                            <button type="button" onClick={() => onEdit(item)}>
                                                 Edit
                                             </button>
                                             <button
@@ -259,6 +311,10 @@ export default function AdminStoriesPage() {
                                                 onClick={async () => {
                                                     if (confirm("Delete story?")) {
                                                         await deleteStory(item.id);
+                                                        if (editId === item.id) {
+                                                            setEditId(null);
+                                                            setForm(empty);
+                                                        }
                                                         await load();
                                                     }
                                                 }}

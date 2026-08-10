@@ -180,7 +180,8 @@ export const DEFAULT_STORIES = [
   {
     id: "ryan",
     name: "Ryan",
-    location: "Central Coast – Gosford",
+    // Plain hyphen/comma only — avoid Unicode en-dashes that break admin forms
+    location: "Central Coast, Gosford",
     quote:
       "The team's commitment to my sister's well-being is unmatched, and I am forever thankful for the positive impact they have made on our family. Thank you, Chameleon Care Group, for making such a difference!",
     published: true,

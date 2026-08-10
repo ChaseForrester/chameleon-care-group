@@ -90,15 +90,62 @@ export async function getBlogBySlug(slug) {
   return DEFAULT_BLOGS.find((b) => b.slug === slug || b.id === slug) || null;
 }
 
+/**
+ * Normalize story text so fancy Unicode dashes/quotes don't break admin inputs
+ * or look like a stray "–" between name and location.
+ */
+export function normalizeStoryFields(data = {}) {
+  const clean = (value) => {
+    if (value == null) return "";
+    return String(value)
+      // en-dash, em-dash, minus, horizontal bar → plain hyphen or comma-friendly space
+      .replace(/[\u2013\u2014\u2012\u2015\u2212]/g, "-")
+      // curly quotes → straight
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      // non-breaking / odd spaces
+      .replace(/[\u00A0\u202F]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const name = clean(data.name);
+  let location = clean(data.location);
+
+  // Fix "Name - Location" accidentally stored in location, or name glued with dash
+  if (location && name && location.toLowerCase().startsWith(name.toLowerCase())) {
+    location = location.slice(name.length).replace(/^[\s\-–,]+/, "").trim();
+  }
+
+  // Prefer "Central Coast, Gosford" over "Central Coast - Gosford"
+  location = location.replace(/\s*-\s*/g, ", ").replace(/,\s*,/g, ",").replace(/^,\s*|\s*,$/g, "");
+
+  return {
+    ...data,
+    name,
+    location,
+    quote: clean(data.quote),
+    published: data.published !== false && data.published !== "false",
+    consent: data.consent !== false && data.consent !== "false",
+  };
+}
+
 export async function getStories({ publishedOnly = true } = {}) {
-  const items = await listCollection("stories", {
-    publishedOnly,
-    orderField: "createdAt",
-  });
-  if (items && items.length) return items;
-  return publishedOnly
-    ? DEFAULT_STORIES.filter((s) => s.published)
-    : DEFAULT_STORIES;
+  // Avoid orderBy(createdAt) — docs without that field are excluded and
+  // composite indexes can fail, leaving the admin form empty / broken.
+  let items = await listCollection("stories", { publishedOnly });
+  if (items && items.length) {
+    items = items
+      .map((s) => normalizeStoryFields(s))
+      .sort((a, b) => {
+        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return tb - ta;
+      });
+    return items;
+  }
+  const fallback = DEFAULT_STORIES.map((s) => normalizeStoryFields(s));
+  return publishedOnly ? fallback.filter((s) => s.published) : fallback;
 }
 
 export async function getOffers({ publishedOnly = true } = {}) {
@@ -181,7 +228,15 @@ export async function deleteOffer(id) {
 }
 
 export async function saveStory(id, data) {
-  const payload = { ...data, updatedAt: serverTimestamp() };
+  const normalized = normalizeStoryFields(data);
+  const payload = {
+    name: normalized.name,
+    location: normalized.location,
+    quote: normalized.quote,
+    published: !!normalized.published,
+    consent: !!normalized.consent,
+    updatedAt: serverTimestamp(),
+  };
   if (id) {
     await setDoc(doc(db(), "stories", id), payload, { merge: true });
     return id;
@@ -415,13 +470,16 @@ export async function isUserAdmin(uid) {
 export async function importDefaultStories() {
   let count = 0;
   for (const s of DEFAULT_STORIES) {
-    const { id, ...rest } = s;
+    const { id, ...rest } = normalizeStoryFields(s);
     const refDoc = doc(db(), "stories", id);
     const existing = await getDoc(refDoc);
     await setDoc(
       refDoc,
       {
-        ...rest,
+        name: rest.name,
+        location: rest.location,
+        quote: rest.quote,
+        source: rest.source || "webflow",
         published: true,
         consent: true,
         updatedAt: serverTimestamp(),
