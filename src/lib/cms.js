@@ -66,28 +66,74 @@ async function listCollection(name, { publishedOnly = false, orderField } = {}) 
   }
 }
 
+/**
+ * Load blogs for public site + admin.
+ * Avoids composite where+orderBy queries (they fail without indexes and
+ * silently fell back to seed posts — hiding CMS-created blogs).
+ */
 export async function getBlogs({ publishedOnly = true } = {}) {
-  const items = await listCollection("blogs", {
-    publishedOnly,
-    orderField: "publishedAt",
+  // Prefer a plain collection read; rules filter unpublished for public users.
+  let items = await listCollection("blogs", { publishedOnly: false });
+  if (items === null) {
+    items = await listCollection("blogs", { publishedOnly: true });
+  }
+
+  const fromCms = Array.isArray(items) ? items : [];
+  // Merge seed posts that are not already in Firestore (by slug)
+  const slugs = new Set(
+    fromCms.map((b) => (b.slug || b.id || "").toLowerCase()).filter(Boolean)
+  );
+  const seedExtras = DEFAULT_BLOGS.filter((b) => {
+    const key = (b.slug || b.id || "").toLowerCase();
+    return key && !slugs.has(key);
   });
-  if (items && items.length) return items;
-  return publishedOnly
-    ? DEFAULT_BLOGS.filter((b) => b.published)
-    : DEFAULT_BLOGS;
+
+  let list = [...fromCms, ...seedExtras];
+
+  if (publishedOnly) {
+    list = list.filter((b) => b.published !== false && b.published !== "false");
+  }
+
+  list.sort((a, b) => {
+    const ta = Date.parse(a.publishedAt || a.createdAt || "") || 0;
+    const tb = Date.parse(b.publishedAt || b.createdAt || "") || 0;
+    return tb - ta;
+  });
+
+  // If Firestore is empty/offline, seed only
+  if (!list.length) {
+    return publishedOnly
+      ? DEFAULT_BLOGS.filter((b) => b.published)
+      : [...DEFAULT_BLOGS];
+  }
+
+  return list;
 }
 
 export async function getBlogBySlug(slug) {
+  if (!slug) return null;
+  const key = String(slug).toLowerCase();
   try {
-    const snap = await getDocs(collection(db(), "blogs"));
-    const found = snap.docs
-      .map((d) => toPlain(d))
-      .find((b) => b.slug === slug || b.id === slug);
-    if (found) return found;
+    // Plain list — no composite index required
+    const items = await listCollection("blogs", { publishedOnly: false });
+    if (items?.length) {
+      const found = items.find(
+        (b) =>
+          (b.slug || "").toLowerCase() === key ||
+          (b.id || "").toLowerCase() === key
+      );
+      if (found) return found;
+    }
   } catch {
     /* fall through */
   }
-  return DEFAULT_BLOGS.find((b) => b.slug === slug || b.id === slug) || null;
+  return (
+    DEFAULT_BLOGS.find(
+      (b) =>
+        (b.slug || "").toLowerCase() === key ||
+        (b.id || "").toLowerCase() === key
+    ) || null
+  );
 }
 
 /**
@@ -240,11 +286,25 @@ export async function getSettings() {
 export async function saveBlog(id, data) {
   const payload = {
     ...data,
+    title: (data.title || "").trim(),
+    slug: (data.slug || "").trim(),
+    excerpt: data.excerpt || "",
+    content: data.content || "",
+    coverImage: data.coverImage || "",
+    author: data.author || "Chameleon Care Group",
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    // Always store a real boolean so public queries / filters work
+    published: data.published === true || data.published === "true",
     updatedAt: serverTimestamp(),
   };
-  if (payload.published && !payload.publishedAt) {
-    payload.publishedAt = serverTimestamp();
+
+  if (payload.published) {
+    // New publishes always get a timestamp; keep existing on edit via merge
+    if (!id || !data.publishedAt) {
+      payload.publishedAt = serverTimestamp();
+    }
   }
+
   if (id) {
     // merge so partial updates never wipe existing fields accidentally
     await setDoc(doc(db(), "blogs", id), payload, { merge: true });

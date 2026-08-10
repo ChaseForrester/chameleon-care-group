@@ -18,7 +18,8 @@ const empty = {
     coverImage: "",
     author: "Chameleon Care Group",
     tags: "",
-    published: false,
+    /** Default on so new posts appear on /blog immediately */
+    published: true,
 };
 
 function slugify(s) {
@@ -88,7 +89,12 @@ export default function AdminBlogsPage() {
                 published: !!form.published,
             };
             await saveBlog(editId, payload);
-            setMessage(editId ? "Blog updated." : "Blog created.");
+            const live = payload.published
+                ? ` Live on /blog/${payload.slug}`
+                : " Saved as draft (not on public site until Published is ticked).";
+            setMessage(
+                (editId ? "Blog updated." : "Blog created.") + live
+            );
             setForm(empty);
             setEditId(null);
             await load();
@@ -215,11 +221,23 @@ export default function AdminBlogsPage() {
                             checked={form.published}
                             onChange={onChange}
                         />
-                        Published (visible on website)
+                        Published (must be ticked to show on /blog)
                     </label>
-                    <button type="submit" className="btn btn-primary" disabled={busy}>
-                        {busy ? "Saving…" : editId ? "Update post" : "Publish / save post"}
-                    </button>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center" }}>
+                        <button type="submit" className="btn btn-primary" disabled={busy}>
+                            {busy ? "Saving…" : editId ? "Update post" : "Publish / save post"}
+                        </button>
+                        {form.slug && form.published && (
+                            <a
+                                className="btn btn-outline"
+                                href={`/blog/${form.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Preview on website
+                            </a>
+                        )}
+                    </div>
                 </form>
             </div>
 
@@ -254,6 +272,15 @@ export default function AdminBlogsPage() {
                                     <td>{item.slug}</td>
                                     <td>
                                         <div className={styles.actions}>
+                                            {item.published && (item.slug || item.id) && (
+                                                <a
+                                                    href={`/blog/${item.slug || item.id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    View
+                                                </a>
+                                            )}
                                             <button type="button" onClick={() => onEdit(item)}>
                                                 Edit
                                             </button>

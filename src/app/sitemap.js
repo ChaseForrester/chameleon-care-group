@@ -1,10 +1,10 @@
 import { REGIONS, slugifySuburb } from "@/lib/locations";
-import { DEFAULT_BLOGS } from "@/lib/seedData";
+import { resolveAllPublishedBlogs } from "@/lib/blogShare";
 import { getSiteUrl } from "@/lib/site";
 
 const BASE = getSiteUrl();
 
-export default function sitemap() {
+export default async function sitemap() {
     const now = new Date();
 
     const staticRoutes = [
@@ -28,8 +28,9 @@ export default function sitemap() {
         priority,
     }));
 
-    const blogs = DEFAULT_BLOGS.map((b) => ({
-        url: `${BASE}/blog/${b.slug}`,
+    const publishedBlogs = await resolveAllPublishedBlogs();
+    const blogs = publishedBlogs.map((b) => ({
+        url: `${BASE}/blog/${b.slug || b.id}`,
         lastModified: new Date(b.publishedAt || Date.now()),
         changeFrequency: "monthly",
         priority: 0.65,

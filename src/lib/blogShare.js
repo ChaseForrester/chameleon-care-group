@@ -55,13 +55,70 @@ function docToBlog(doc) {
 
 /**
  * Server-safe blog lookup (no browser Firebase SDK).
- * Uses seed defaults + Firestore REST runQuery for published posts.
+ * Prefers live Firestore CMS posts, then seed defaults.
  */
 export async function resolveBlogPost(slug) {
     if (!slug) return null;
+    const key = String(slug).toLowerCase();
 
-    const fromSeed = DEFAULT_BLOGS.find((b) => b.slug === slug || b.id === slug);
-    if (fromSeed) return fromSeed;
+    // 1) Live CMS (published) via Firestore REST — this is where super-admin posts live
+    try {
+        const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                structuredQuery: {
+                    from: [{ collectionId: "blogs" }],
+                    where: {
+                        fieldFilter: {
+                            field: { fieldPath: "published" },
+                            op: "EQUAL",
+                            value: { booleanValue: true },
+                        },
+                    },
+                    limit: 50,
+                },
+            }),
+            // Short revalidate so new admin posts appear quickly
+            next: { revalidate: 30 },
+        });
+        if (res.ok) {
+            const rows = await res.json();
+            if (Array.isArray(rows)) {
+                for (const row of rows) {
+                    const blog = docToBlog(row.document);
+                    if (
+                        blog &&
+                        ((blog.slug || "").toLowerCase() === key ||
+                            (blog.id || "").toLowerCase() === key)
+                    ) {
+                        return blog;
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.warn("[blogShare] resolveBlogPost failed", err?.message || err);
+    }
+
+    // 2) Seed fallbacks (built-in demo posts)
+    return (
+        DEFAULT_BLOGS.find(
+            (b) =>
+                (b.slug || "").toLowerCase() === key ||
+                (b.id || "").toLowerCase() === key
+        ) || null
+    );
+}
+
+/** All published blogs for sitemap / listing SSR helpers */
+export async function resolveAllPublishedBlogs() {
+    const bySlug = new Map();
+
+    for (const b of DEFAULT_BLOGS.filter((x) => x.published)) {
+        bySlug.set((b.slug || b.id).toLowerCase(), b);
+    }
 
     try {
         const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
@@ -81,23 +138,29 @@ export async function resolveBlogPost(slug) {
                     limit: 50,
                 },
             }),
-            // Fresh enough for CMS updates; FB scrapers still get current meta
-            next: { revalidate: 60 },
+            next: { revalidate: 30 },
         });
-        if (!res.ok) return null;
-        const rows = await res.json();
-        if (!Array.isArray(rows)) return null;
-        for (const row of rows) {
-            const blog = docToBlog(row.document);
-            if (blog && (blog.slug === slug || blog.id === slug)) {
-                return blog;
+        if (res.ok) {
+            const rows = await res.json();
+            if (Array.isArray(rows)) {
+                for (const row of rows) {
+                    const blog = docToBlog(row.document);
+                    if (blog?.slug || blog?.id) {
+                        // CMS wins over seed for the same slug
+                        bySlug.set((blog.slug || blog.id).toLowerCase(), blog);
+                    }
+                }
             }
         }
     } catch (err) {
-        console.warn("[blogShare] resolveBlogPost failed", err?.message || err);
+        console.warn("[blogShare] resolveAllPublishedBlogs failed", err?.message || err);
     }
 
-    return null;
+    return Array.from(bySlug.values()).sort((a, b) => {
+        const ta = Date.parse(a.publishedAt || a.createdAt || "") || 0;
+        const tb = Date.parse(b.publishedAt || b.createdAt || "") || 0;
+        return tb - ta;
+    });
 }
 
 /** Next.js Metadata for rich Facebook / Messenger / iMessage previews. */

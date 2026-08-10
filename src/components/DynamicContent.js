@@ -73,8 +73,6 @@ function useCmsList(kind, fallback) {
                 if (!alive) return;
 
                 // Stories: always replace with CMS result (already deduped in getStories).
-                // Empty array means "intentionally none" — do not keep seed fallback
-                // alongside live data (that caused doubles / mismatches with admin).
                 if (kind === "stories") {
                     if (Array.isArray(data)) {
                         setItems(
@@ -82,6 +80,33 @@ function useCmsList(kind, fallback) {
                                 .filter((s) => s && s.consent !== false && s.published !== false)
                                 .map(formatStoryForDisplay)
                         );
+                    }
+                    return;
+                }
+
+                // Blogs: always use CMS list (includes admin posts + seed).
+                // Previously a failed composite query fell back to seed-only forever.
+                if (kind === "blogs") {
+                    if (Array.isArray(data) && data.length) {
+                        const fixed = data.map((item) => {
+                            let coverImage = item.coverImage || item.image || "";
+                            if (typeof coverImage === "string") {
+                                coverImage = coverImage
+                                    .replace(/\.webp$/i, ".jpg")
+                                    .replace(/\.png$/i, ".jpg");
+                                // Keep Firebase / remote URLs and local /images paths
+                                if (
+                                    coverImage &&
+                                    !coverImage.startsWith("/images/") &&
+                                    !coverImage.startsWith("http") &&
+                                    !coverImage.startsWith("data:")
+                                ) {
+                                    coverImage = "";
+                                }
+                            }
+                            return { ...item, coverImage };
+                        });
+                        setItems(fixed);
                     }
                     return;
                 }
