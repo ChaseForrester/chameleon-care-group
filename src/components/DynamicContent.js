@@ -27,7 +27,22 @@ function useCmsList(kind, fallback) {
                     data = await cms.getOffers({ publishedOnly: true });
                 else if (kind === "services")
                     data = await cms.getServices({ publishedOnly: true });
-                if (alive && data?.length) setItems(data);
+                if (alive && data?.length) {
+          // Prefer local /images paths that exist; fix stale .png/.webp CMS paths
+          const fixed = data.map((item) => {
+            let image = item.image || item.coverImage;
+            if (typeof image === "string") {
+              image = image.replace(/\.webp$/i, ".jpg").replace(/\.png$/i, ".jpg");
+              if (!image.startsWith("/images/") && !image.startsWith("http")) {
+                image = null;
+              }
+            }
+            if (item.image != null && image) return { ...item, image };
+            if (item.coverImage != null && image) return { ...item, coverImage: image };
+            return item;
+          });
+          setItems(fixed);
+        }
             } catch {
                 /* keep fallback */
             }
@@ -148,13 +163,17 @@ export function ServicesList({ styles }) {
                     <div className={styles.media}>
                         {s.image && (
                             <Image
-                                src={s.image}
-                                alt=""
-                                width={520}
-                                height={360}
+                                src={
+                                    s.image.endsWith(".webp")
+                                        ? s.image.replace(".webp", ".jpg")
+                                        : s.image
+                                }
+                                alt={s.title || ""}
+                                fill
                                 sizes="(max-width: 900px) 100vw, 50vw"
                                 loading="lazy"
-                                quality={70}
+                                quality={80}
+                                style={{ objectFit: "cover" }}
                             />
                         )}
                     </div>

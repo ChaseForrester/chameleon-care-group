@@ -39,7 +39,7 @@ export default function BookPage() {
                 <div className="container">
                     <div className={styles.banner}>
                         <Image
-                            src="/images/service-1.webp"
+                            src="/images/service-1.jpg"
                             alt="Inclusive NDIS personal care support"
                             width={1200}
                             height={320}

@@ -12,27 +12,33 @@
   scroll-margin-top: calc(var(--header-h) + 1.5rem);
 }
 
+/* Avoid direction:rtl — it breaks Next/Image layout in some browsers */
 .reverse {
-  direction: rtl;
+  grid-template-columns: 1.05fr 0.95fr;
 }
 
-.reverse>* {
-  direction: ltr;
+.reverse .media {
+  order: 2;
+}
+
+.reverse .content {
+  order: 1;
 }
 
 .media {
+  position: relative;
   border-radius: var(--radius-xl);
   overflow: hidden;
   background: var(--color-bg-muted);
-  min-height: 280px;
-  border: 1px solid rgba(13, 92, 84, 0.08);
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
-.media img {
-  width: 100%;
-  height: 100%;
+.mediaImg {
   object-fit: cover;
-  min-height: 280px;
+  object-position: center;
 }
 
 .content h2 {
@@ -71,7 +77,7 @@
   background: #fff;
   border-radius: var(--radius-xl);
   padding: 2.25rem;
-  border: 1px solid rgba(13, 92, 84, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .bottomCta p {
@@ -84,6 +90,10 @@
   .item,
   .reverse {
     grid-template-columns: 1fr;
-    direction: ltr;
+  }
+
+  .reverse .media,
+  .reverse .content {
+    order: unset;
   }
 }

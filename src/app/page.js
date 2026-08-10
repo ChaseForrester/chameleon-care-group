@@ -76,7 +76,7 @@ export default function Home() {
           <div className={`${styles.heroVisual} animate-in delay-2`}>
             <div className={styles.heroImageWrap}>
               <Image
-                src="/images/logo-hero.webp"
+                src="/images/logo-hero.png"
                 alt="Chameleon Care Group logo"
                 width={320}
                 height={320}
@@ -139,13 +139,13 @@ export default function Home() {
               >
                 <div className={styles.serviceImg}>
                   <Image
-                    src={s.image}
-                    alt=""
-                    width={400}
-                    height={240}
+                    src={s.image.endsWith(".webp") ? s.image.replace(".webp", ".jpg") : s.image}
+                    alt={s.title}
+                    fill
                     sizes="(max-width: 640px) 100vw, (max-width: 960px) 50vw, 33vw"
                     loading={idx < 2 ? "eager" : "lazy"}
-                    quality={70}
+                    quality={80}
+                    className={styles.serviceImgEl}
                   />
                 </div>
                 <div className={styles.serviceBody}>
@@ -233,7 +233,7 @@ export default function Home() {
           <div className={styles.aboutBand}>
             <div className={styles.aboutVisual}>
               <Image
-                src="/images/care-meeting.webp"
+                src="/images/care-meeting.jpg"
                 alt="Support worker and participant planning care together"
                 width={800}
                 height={438}

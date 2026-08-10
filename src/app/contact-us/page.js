@@ -33,7 +33,7 @@ export default function ContactPage() {
                     <Reveal className={styles.info}>
                         <div className={styles.photo}>
                             <Image
-                                src="/images/nurse-hero.webp"
+                                src="/images/nurse-hero.jpg"
                                 alt="Inclusive NDIS nursing support in the home"
                                 width={640}
                                 height={360}
