@@ -16,33 +16,37 @@ import {
     DEFAULT_STORIES,
 } from "@/lib/seedData";
 
-export function useCmsList(loader, fallback) {
+function useCmsList(kind, fallback) {
     const [items, setItems] = useState(fallback);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let alive = true;
         (async () => {
             try {
-                const data = await loader();
+                let data;
+                if (kind === "blogs") data = await getBlogs({ publishedOnly: true });
+                else if (kind === "stories")
+                    data = await getStories({ publishedOnly: true });
+                else if (kind === "offers")
+                    data = await getOffers({ publishedOnly: true });
+                else if (kind === "services")
+                    data = await getServices({ publishedOnly: true });
                 if (alive && data?.length) setItems(data);
             } catch {
                 /* keep fallback */
-            } finally {
-                if (alive) setLoading(false);
             }
         })();
         return () => {
             alive = false;
         };
-    }, [loader]);
+    }, [kind]);
 
-    return { items, loading };
+    return items;
 }
 
 export function BlogGrid({ styles }) {
-    const { items } = useCmsList(
-        () => getBlogs({ publishedOnly: true }),
+    const items = useCmsList(
+        "blogs",
         DEFAULT_BLOGS.filter((b) => b.published)
     );
 
@@ -78,8 +82,8 @@ export function BlogGrid({ styles }) {
 }
 
 export function StoriesGrid({ styles }) {
-    const { items } = useCmsList(
-        () => getStories({ publishedOnly: true }),
+    const items = useCmsList(
+        "stories",
         DEFAULT_STORIES.filter((s) => s.published && s.consent)
     );
 
@@ -101,8 +105,8 @@ export function StoriesGrid({ styles }) {
 }
 
 export function OffersGrid({ styles }) {
-    const { items } = useCmsList(
-        () => getOffers({ publishedOnly: true }),
+    const items = useCmsList(
+        "offers",
         DEFAULT_OFFERS.filter((o) => o.published)
     );
 
@@ -127,10 +131,7 @@ export function OffersGrid({ styles }) {
 }
 
 export function ServicesList({ styles }) {
-    const { items } = useCmsList(
-        () => getServices({ publishedOnly: true }),
-        DEFAULT_SERVICES
-    );
+    const items = useCmsList("services", DEFAULT_SERVICES);
 
     return (
         <div className={styles.list}>
