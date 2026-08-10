@@ -1,7 +1,8 @@
 import { REGIONS, slugifySuburb } from "@/lib/locations";
 import { DEFAULT_BLOGS } from "@/lib/seedData";
+import { getSiteUrl } from "@/lib/site";
 
-const BASE = "https://chameleoncaregroup.com.au";
+const BASE = getSiteUrl();
 
 export default function sitemap() {
     const staticRoutes = [

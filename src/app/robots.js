@@ -1,3 +1,5 @@
+import { getSiteUrl } from "@/lib/site";
+
 export default function robots() {
     return {
         rules: {
@@ -5,6 +7,6 @@ export default function robots() {
             allow: "/",
             disallow: ["/admin", "/admin/"],
         },
-        sitemap: "https://chameleoncaregroup.com.au/sitemap.xml",
+        sitemap: `${getSiteUrl()}/sitemap.xml`,
     };
 }

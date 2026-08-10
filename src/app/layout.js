@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileCta from "@/components/MobileCta";
 import { AuthProvider } from "@/context/AuthContext";
+import { getSiteUrl } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,7 +19,7 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://chameleoncaregroup.com.au"),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default:
       "Chameleon Care Group | Personalised NDIS Support in Sutherland Shire",

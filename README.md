@@ -74,16 +74,31 @@ firebase deploy --only firestore:rules,storage --project chameleon-care-group-au
 firebase deploy --only firestore,storage --project chameleon-care-group-au
 ```
 
-## Deploy website
+## Deploy on Vercel (GitHub)
 
-Recommended: **Vercel** (Next.js App Router).
+This repo is set up for the standard **GitHub → Vercel** workflow.
+
+1. Import [ChaseForrester/chameleon-care-group](https://github.com/ChaseForrester/chameleon-care-group) in [Vercel](https://vercel.com/new)
+2. Framework preset: **Next.js** (auto-detected)
+3. Root directory: `.` (repo root)
+4. Env vars are optional — Firebase public config is baked in with safe defaults
+5. Optional: set `NEXT_PUBLIC_SITE_URL` to your custom domain
+
+Or from the CLI:
 
 ```bash
-# from repo root
-npx vercel
+npm i -g vercel
+vercel link
+vercel --prod
 ```
 
-Add the same `NEXT_PUBLIC_FIREBASE_*` env vars in the Vercel project settings.
+Every push to `main` rebuilds production. Pull requests get preview URLs.
+
+### Firebase Auth domains
+
+After deploying, add your Vercel domain(s) under  
+Firebase Console → Authentication → Settings → Authorized domains  
+(e.g. `your-app.vercel.app` and `chameleoncaregroup.com.au`).
 
 ## Stack
 
