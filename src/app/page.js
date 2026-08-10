@@ -50,7 +50,7 @@ export default function Home() {
               can shine.
             </p>
             <div className={styles.heroActions}>
-              <Link href="/book" className="btn btn-primary btn-lg">
+              <Link href="/book-with-us" className="btn btn-primary btn-lg">
                 Book in now
               </Link>
               <Link href="/services" className="btn btn-ghost btn-lg">
@@ -207,7 +207,7 @@ export default function Home() {
                 <h3>{offer.title}</h3>
                 <p>{offer.description}</p>
               </div>
-              <Link href={offer.ctaHref || "/book"} className="btn btn-accent">
+              <Link href={offer.ctaHref || "/book-with-us"} className="btn btn-accent">
                 {offer.ctaLabel || "Get started"}
               </Link>
             </div>
@@ -243,7 +243,7 @@ export default function Home() {
                   lifestyle
                 </li>
               </ul>
-              <Link href="/about" className="btn btn-secondary">
+              <Link href="/about-us" className="btn btn-secondary">
                 About our team
               </Link>
             </div>
@@ -325,7 +325,7 @@ export default function Home() {
                 our team today.
               </p>
               <div className={styles.ctaActions}>
-                <Link href="/book" className="btn btn-primary">
+                <Link href="/book-with-us" className="btn btn-primary">
                   Book in now
                 </Link>
                 <Link href="/referral" className="btn btn-ghost">

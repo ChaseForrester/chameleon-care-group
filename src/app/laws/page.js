@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "../legal.module.css";
 import { KEY_LAWS, LEGAL_PDFS } from "@/lib/legalDocs";
+import Reveal from "@/components/Reveal";
 
 export const metadata = {
     title: "Laws, Policies & Downloadable Documents",
@@ -35,6 +37,14 @@ export default function LawsPage() {
 
             <section className="section">
                 <div className="container">
+                    <Reveal className={styles.heroMedia}>
+                        <Image
+                            src="/images/nurse-clinical.jpg"
+                            alt="Safe, professional NDIS clinical care"
+                            width={1100}
+                            height={360}
+                        />
+                    </Reveal>
                     <div className={styles.notice}>
                         <strong>Important:</strong> Documents on this page are educational
                         summaries prepared for Chameleon Care Group. For the latest official
@@ -102,7 +112,7 @@ export default function LawsPage() {
                         <Link href="/terms" className="btn btn-outline">
                             Terms & Conditions
                         </Link>
-                        <Link href="/book" className="btn btn-primary">
+                        <Link href="/book-with-us" className="btn btn-primary">
                             Book supports
                         </Link>
                     </div>

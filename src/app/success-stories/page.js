@@ -33,7 +33,7 @@ export default function SuccessStoriesPage() {
               Want to share your experience? We only publish stories with clear
               consent and can anonymise details where preferred.
             </p>
-            <Link href="/contact" className="btn btn-outline">
+            <Link href="/contact-us" className="btn btn-outline">
               Get in touch
             </Link>
           </div>

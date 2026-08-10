@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { submitInquiry } from "@/lib/cms";
+import { buildMailto, NOTIFY_EMAILS } from "@/lib/emails";
 import styles from "./BookWizard.module.css";
 
 const STEPS = [
@@ -229,13 +230,12 @@ export default function BookWizard() {
             });
             setStatus("success");
         } catch {
-            // mailto fallback
-            const body = encodeURIComponent(
-                Object.entries(form)
+            window.location.href = buildMailto({
+                subject: "Book with us application",
+                body: Object.entries(form)
                     .map(([k, v]) => `${k}: ${v}`)
-                    .join("\n")
-            );
-            window.location.href = `mailto:chameleonnursingcare@gmail.com?subject=Book%20in%20application&body=${body}`;
+                    .join("\n"),
+            });
             setStatus("success");
         }
     };
@@ -246,8 +246,9 @@ export default function BookWizard() {
                 <div className={styles.successIcon}>✓</div>
                 <h2>Done! Thank you!</h2>
                 <p>
-                    Your submission has been received. We will be in touch shortly. For
-                    urgent needs, call{" "}
+                    Your submission has been received by our team
+                    ({NOTIFY_EMAILS.join(" & ")}). We will be in touch shortly.
+                    For urgent needs, call{" "}
                     <a href="tel:0430068300">0430 068 300</a>.
                 </p>
             </div>
@@ -721,7 +722,7 @@ export default function BookWizard() {
                     {s.id === "documents" && (
                         <Field
                             label="Document names / notes"
-                            hint="e.g. NDIS plan, medical reports, referral letter. Email attachments to chameleonnursingcare@gmail.com after submitting."
+                            hint="e.g. NDIS plan, medical reports, referral letter. Email attachments to chameleonnursingcare@gmail.com and hello@techaidaustralia.com.au after submitting."
                         >
                             <textarea
                                 name="documentNames"

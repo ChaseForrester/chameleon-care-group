@@ -40,7 +40,7 @@ export default function ServicesPage() {
               to your NDIS plan or private care needs.
             </p>
           </div>
-          <Link href="/contact" className="btn btn-secondary">
+          <Link href="/contact-us" className="btn btn-secondary">
             Talk to our team
           </Link>
         </div>

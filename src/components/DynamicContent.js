@@ -121,7 +121,7 @@ export function OffersGrid({ styles }) {
                     {o.badge && <span className="badge badge-accent">{o.badge}</span>}
                     <h2>{o.title}</h2>
                     <p>{o.description}</p>
-                    <Link href={o.ctaHref || "/book"} className="btn btn-primary">
+                    <Link href={o.ctaHref || "/book-with-us"} className="btn btn-primary">
                         {o.ctaLabel || "Learn more"}
                     </Link>
                 </article>
@@ -155,7 +155,7 @@ export function ServicesList({ styles }) {
                                 <li key={f}>{f}</li>
                             ))}
                         </ul>
-                        <Link href="/book" className="btn btn-primary">
+                        <Link href="/book-with-us" className="btn btn-primary">
                             Enquire about this service
                         </Link>
                     </div>

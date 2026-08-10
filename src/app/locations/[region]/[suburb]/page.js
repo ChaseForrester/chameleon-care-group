@@ -88,7 +88,7 @@ export default async function SuburbPage({ params }) {
                         your home.
                     </p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginTop: "1.5rem" }}>
-                        <Link href="/book" className="btn btn-primary">
+                        <Link href="/book-with-us" className="btn btn-primary">
                             Book in {suburb}
                         </Link>
                         <a href={SITE.phoneHref} className="btn btn-ghost">
@@ -131,7 +131,7 @@ export default async function SuburbPage({ params }) {
                                 Email:{" "}
                                 <a href={SITE.emailHref}>{SITE.email}</a>
                             </p>
-                            <Link href="/book" className="btn btn-accent btn-block" style={{ marginTop: "1rem" }}>
+                            <Link href="/book-with-us" className="btn btn-accent btn-block" style={{ marginTop: "1rem" }}>
                                 Start application
                             </Link>
                         </div>

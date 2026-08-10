@@ -6,7 +6,10 @@ import { SITE } from "@/lib/seedData";
 
 export default function MobileCta() {
     const pathname = usePathname();
-    if (pathname?.startsWith("/admin") || pathname?.startsWith("/book")) {
+    if (
+        pathname?.startsWith("/admin") ||
+        pathname?.startsWith("/book-with-us")
+    ) {
         return null;
     }
 
@@ -15,8 +18,8 @@ export default function MobileCta() {
             <a href={SITE.phoneHref} className="btn btn-outline btn-sm">
                 Call
             </a>
-            <Link href="/book" className="btn btn-primary btn-sm">
-                Book in
+            <Link href="/book-with-us" className="btn btn-primary btn-sm">
+                Book with us
             </Link>
         </div>
     );

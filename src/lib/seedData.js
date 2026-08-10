@@ -6,7 +6,8 @@ export const SITE = {
   phone: "0430 068 300",
   phoneHref: "tel:0430068300",
   email: "chameleonnursingcare@gmail.com",
-  emailHref: "mailto:chameleonnursingcare@gmail.com",
+  emailSecondary: "hello@techaidaustralia.com.au",
+  emailHref: "mailto:chameleonnursingcare@gmail.com,hello@techaidaustralia.com.au",
   locations: "Illawarra · Central Coast · Sydney",
   region: "Sutherland Shire & Greater Sydney",
   abn: "",
@@ -218,7 +219,7 @@ Contact our team for a conversation about how we can support you or your loved o
 - Documentation for planners and support coordinators
 
 Our clinical team delivers assessments that are clear, respectful, and planner-ready.`,
-    coverImage: "/images/ndis.png",
+    coverImage: "/images/care-family.jpg",
     author: "Chameleon Care Group",
     published: true,
     publishedAt: "2026-02-01T00:00:00.000Z",
@@ -234,7 +235,7 @@ export const DEFAULT_OFFERS = [
       "Starting with a new provider can feel overwhelming. Book a free meet-and-greet so we can learn about your goals and show you how CCG adapts to you.",
     badge: "Free consultation",
     ctaLabel: "Book meet & greet",
-    ctaHref: "/book",
+    ctaHref: "/book-with-us",
     published: true,
     startsAt: "2026-01-01",
     endsAt: "2026-12-31",
@@ -268,7 +269,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "How do I book an NDIS assessment or support?",
-    a: "Use our online Book With Us multi-step form, call 0430 068 300, or email chameleonnursingcare@gmail.com. We'll guide you through next steps.",
+    a: "Use our online Book With Us multi-step form, call 0430 068 300, or email chameleonnursingcare@gmail.com / hello@techaidaustralia.com.au. We'll guide you through next steps.",
   },
 ];
 

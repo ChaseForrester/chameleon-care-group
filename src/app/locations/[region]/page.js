@@ -68,7 +68,7 @@ export default async function RegionPage({ params }) {
                             in your home across {region.suburbs.length}+ local suburbs.
                         </p>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
-                            <Link href="/book" className="btn btn-primary">
+                            <Link href="/book-with-us" className="btn btn-primary">
                                 Book in {region.name}
                             </Link>
                             <Link href="/services" className="btn btn-outline">

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import styles from "./Footer.module.css";
 import { SITE } from "@/lib/seedData";
 import { REGIONS } from "@/lib/locations";
+import { NOTIFY_EMAILS } from "@/lib/emails";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -60,7 +61,7 @@ export default function Footer() {
         <div className={styles.col}>
           <h4>Explore</h4>
           <Link href="/">Home</Link>
-          <Link href="/about">About us</Link>
+          <Link href="/about-us">About us</Link>
           <Link href="/services">Services</Link>
           <Link href="/locations">Service areas</Link>
           <Link href="/success-stories">Success stories</Link>
@@ -69,25 +70,53 @@ export default function Footer() {
 
         <div className={styles.col}>
           <h4>Get started</h4>
-          <Link href="/book">Book in</Link>
+          <Link href="/book-with-us">Book with us</Link>
           <Link href="/referral">Referral</Link>
-          <Link href="/contact">Contact</Link>
+          <Link href="/contact-us">Contact us</Link>
           <Link href="/offers">Offers</Link>
           <Link href="/laws">Laws & PDFs</Link>
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/terms">Terms & Conditions</Link>
-          <Link href="/admin">Admin login</Link>
         </div>
 
         <div className={styles.col}>
-          <h4>Areas we serve</h4>
+          <h4>Contact</h4>
+          {NOTIFY_EMAILS.map((email) => (
+            <a key={email} href={`mailto:${email}`}>
+              {email}
+            </a>
+          ))}
+          <a href={SITE.phoneHref}>{SITE.phone}</a>
           {REGIONS.map((r) => (
             <Link key={r.id} href={`/locations/${r.id}`}>
               {r.name}
             </Link>
           ))}
-          <a href={SITE.phoneHref}>{SITE.phone}</a>
-          <a href={SITE.emailHref}>{SITE.email}</a>
+        </div>
+      </div>
+
+      {/* Tech Aid powered badge — matches Illawarra Landscaping footer */}
+      <div className={styles.powered}>
+        <div className="container">
+          <a
+            className={styles.techAidBadge}
+            href="https://www.techaidaustralia.com.au/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Powered by Tech Aid Australia"
+          >
+            <Image
+              src="/images/tech-aid-logo.png"
+              alt="Tech Aid Australia logo"
+              width={48}
+              height={48}
+              className={styles.techAidMark}
+            />
+            <span className={styles.techAidText}>
+              <span className={styles.techAidKicker}>Powered by</span>
+              <span className={styles.techAidName}>Tech Aid Australia</span>
+            </span>
+          </a>
         </div>
       </div>
 
@@ -106,16 +135,35 @@ export default function Footer() {
               {" · "}
               <Link href="/sitemap.xml">Sitemap</Link>
             </p>
-            <p>
-              Built by{" "}
+            <div className={styles.credits}>
+              <span>
+                Developed by{" "}
+                <a
+                  href="https://www.linkedin.com/in/chaseforrester/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Chase Forrester
+                </a>
+              </span>
+              <span className={styles.sep} aria-hidden>
+                ·
+              </span>
               <a
-                href="https://www.techaidaustralia.com.au"
+                className={styles.creditsTechAid}
+                href="https://www.techaidaustralia.com.au/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Tech Aid Australia
+                <Image
+                  src="/images/tech-aid-logo.png"
+                  alt=""
+                  width={22}
+                  height={22}
+                />
+                <strong>Tech Aid Australia</strong>
               </a>
-            </p>
+            </div>
           </div>
         </div>
       </div>

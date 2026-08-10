@@ -9,10 +9,10 @@ export default function sitemap() {
 
     const staticRoutes = [
         { path: "", priority: 1, changeFrequency: "weekly" },
-        { path: "/about", priority: 0.9, changeFrequency: "monthly" },
+        { path: "/about-us", priority: 0.9, changeFrequency: "monthly" },
         { path: "/services", priority: 0.95, changeFrequency: "monthly" },
-        { path: "/book", priority: 0.95, changeFrequency: "weekly" },
-        { path: "/contact", priority: 0.9, changeFrequency: "monthly" },
+        { path: "/book-with-us", priority: 0.95, changeFrequency: "weekly" },
+        { path: "/contact-us", priority: 0.9, changeFrequency: "monthly" },
         { path: "/locations", priority: 0.9, changeFrequency: "weekly" },
         { path: "/success-stories", priority: 0.8, changeFrequency: "monthly" },
         { path: "/blog", priority: 0.8, changeFrequency: "weekly" },

@@ -81,7 +81,7 @@ export default function LocationsPage() {
                             nursing and aged care across the suburbs listed above — in your
                             home, on your schedule.
                         </p>
-                        <Link href="/book" className="btn btn-primary">
+                        <Link href="/book-with-us" className="btn btn-primary">
                             Book support in your area
                         </Link>
                     </div>

@@ -11,10 +11,10 @@ const LINKS = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
   { href: "/locations", label: "Areas" },
-  { href: "/about", label: "About" },
+  { href: "/about-us", label: "About" },
   { href: "/success-stories", label: "Stories" },
   { href: "/blog", label: "Blog" },
-  { href: "/contact", label: "Contact" },
+  { href: "/contact-us", label: "Contact" },
 ];
 
 export default function Navbar() {
@@ -85,8 +85,8 @@ export default function Navbar() {
           <a href={SITE.phoneHref} className={styles.phone}>
             {SITE.phone}
           </a>
-          <Link href="/book" className="btn btn-primary btn-sm">
-            Book in
+          <Link href="/book-with-us" className="btn btn-primary btn-sm">
+            Book with us
           </Link>
         </div>
 
@@ -110,8 +110,8 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link href="/book" className="btn btn-primary btn-block">
-            Book in now
+          <Link href="/book-with-us" className="btn btn-primary btn-block">
+            Book with us
           </Link>
           <a href={SITE.phoneHref} className={styles.mobilePhone}>
             Call {SITE.phone}

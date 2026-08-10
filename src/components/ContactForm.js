@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { submitInquiry } from "@/lib/cms";
+import { buildMailto } from "@/lib/emails";
 import styles from "./ContactForm.module.css";
 
 export default function ContactForm({
@@ -50,12 +51,10 @@ export default function ContactForm({
             });
         } catch (err) {
             console.warn(err);
-            const body = encodeURIComponent(
-                `Name: ${form.name}\nPhone: ${form.phone}\nSuburb: ${form.suburb}\n\n${form.message}`
-            );
-            window.location.href = `mailto:chameleonnursingcare@gmail.com?subject=${encodeURIComponent(
-                form.subject || "Website enquiry"
-            )}&body=${body}`;
+            window.location.href = buildMailto({
+                subject: form.subject || "Website enquiry",
+                body: `Name: ${form.name}\nPhone: ${form.phone}\nSuburb: ${form.suburb}\nPreferred: ${form.preferredContact}\n\n${form.message}`,
+            });
             setStatus("success");
         }
     };
