@@ -21,6 +21,7 @@ import {
   DEFAULT_SERVICES,
   DEFAULT_STORIES,
 } from "./seedData";
+import { LEGAL_PDFS } from "./legalDocs";
 
 function db() {
   return getClientDb();
@@ -649,6 +650,152 @@ export async function uploadImage(file, folder = "uploads") {
     contentType: file.type || "image/jpeg",
   });
   return getDownloadURL(storageRef);
+}
+
+/**
+ * Upload any allowed file (PDF, Word, image, text) to Storage.
+ * @returns {{ url: string, path: string, name: string, contentType: string, size: number }}
+ */
+export async function uploadFile(file, folder = "uploads") {
+  if (!file) throw new Error("No file selected");
+  const safeName = (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "_");
+  const path = `${folder}/${Date.now()}-${safeName}`;
+  const storageRef = ref(storage(), path);
+  const contentType = file.type || "application/octet-stream";
+  await uploadBytes(storageRef, file, { contentType });
+  const url = await getDownloadURL(storageRef);
+  return {
+    url,
+    path,
+    name: file.name || safeName,
+    contentType,
+    size: file.size || 0,
+  };
+}
+
+export async function deleteStoragePath(path) {
+  // Only delete Storage object keys — not public /pdfs/ paths or full HTTPS URLs
+  if (!path || path.startsWith("/pdfs/") || /^https?:\/\//i.test(path)) return;
+  try {
+    await deleteObject(ref(storage(), path));
+  } catch (err) {
+    console.warn("[cms] deleteStoragePath", err?.message || err);
+  }
+}
+
+/* ── Legal / laws documents ── */
+
+export async function getLegalDocs({ includeUnpublished = false } = {}) {
+  let cms = [];
+  try {
+    const snap = await getDocs(collection(db(), "legalDocs"));
+    cms = snap.docs.map((d) => toPlain(d));
+  } catch (err) {
+    console.warn("[cms] getLegalDocs", err?.message || err);
+  }
+
+  const byId = new Map();
+  for (const seed of LEGAL_PDFS) {
+    byId.set(seed.id, {
+      ...seed,
+      source: "seed",
+      published: true,
+      order: seed.order ?? 100,
+    });
+  }
+  for (const docItem of cms) {
+    const id = docItem.id || docItem.builtInId;
+    if (!id) continue;
+    byId.set(id, {
+      ...byId.get(id),
+      ...docItem,
+      id,
+      source: docItem.source || "cms",
+    });
+  }
+
+  let list = Array.from(byId.values());
+  if (!includeUnpublished) {
+    list = list.filter((d) => d.published !== false);
+  }
+  return list.sort((a, b) => {
+    const oa = Number(a.order) || 999;
+    const ob = Number(b.order) || 999;
+    if (oa !== ob) return oa - ob;
+    return String(a.title || "").localeCompare(String(b.title || ""));
+  });
+}
+
+export async function saveLegalDoc(id, data) {
+  const payload = {
+    title: (data.title || "").trim(),
+    description: data.description || "",
+    category: data.category || "Documents",
+    file: data.file || "",
+    storagePath: data.storagePath || "",
+    externalUrl: data.externalUrl || "",
+    externalLabel: data.externalLabel || "",
+    order: Number(data.order) || 100,
+    published: data.published !== false,
+    updatedAt: serverTimestamp(),
+  };
+  if (!payload.title) throw new Error("Title is required");
+  if (!payload.file) throw new Error("A PDF file or file URL is required");
+
+  if (id) {
+    await setDoc(doc(db(), "legalDocs", id), payload, { merge: true });
+    return id;
+  }
+  payload.createdAt = serverTimestamp();
+  payload.source = "cms";
+  const refDoc = await addDoc(collection(db(), "legalDocs"), payload);
+  return refDoc.id;
+}
+
+/**
+ * Upsert a seed document override (same id as LEGAL_PDFS entry).
+ */
+export async function upsertLegalDocById(id, data) {
+  if (!id) throw new Error("Document id required");
+  const payload = {
+    title: (data.title || "").trim(),
+    description: data.description || "",
+    category: data.category || "Documents",
+    file: data.file || "",
+    storagePath: data.storagePath || "",
+    externalUrl: data.externalUrl || "",
+    externalLabel: data.externalLabel || "",
+    order: Number(data.order) || 100,
+    published: data.published !== false,
+    source: data.source || "cms",
+    builtInId: id,
+    updatedAt: serverTimestamp(),
+  };
+  const existing = await getDoc(doc(db(), "legalDocs", id));
+  if (!existing.exists()) {
+    payload.createdAt = serverTimestamp();
+  }
+  await setDoc(doc(db(), "legalDocs", id), payload, { merge: true });
+  return id;
+}
+
+export async function deleteLegalDoc(id, { storagePath } = {}) {
+  if (!id) throw new Error("Missing document id");
+  // Never delete seed file paths under /pdfs/ — only Firestore override + Storage uploads
+  try {
+    const snap = await getDoc(doc(db(), "legalDocs", id));
+    const path = storagePath || snap.data()?.storagePath;
+    if (path && !String(path).startsWith("/pdfs/")) {
+      try {
+        await deleteObject(ref(storage(), path));
+      } catch {
+        /* ignore missing storage object */
+      }
+    }
+  } catch {
+    /* continue to delete firestore doc */
+  }
+  await deleteDoc(doc(db(), "legalDocs", id));
 }
 
 const DOC_MAX_BYTES = 10 * 1024 * 1024;

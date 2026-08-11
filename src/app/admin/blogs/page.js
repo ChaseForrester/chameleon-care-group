@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
+import RichTextEditor from "@/components/RichTextEditor";
 import styles from "../admin.module.css";
 import {
     getBlogs,
@@ -9,6 +10,7 @@ import {
     deleteBlog,
     uploadImage,
 } from "@/lib/cms";
+import { legacyContentToHtml, looksLikeHtml } from "@/lib/htmlContent";
 
 const empty = {
     title: "",
@@ -18,7 +20,6 @@ const empty = {
     coverImage: "",
     author: "Chameleon Care Group",
     tags: "",
-    /** Default on so new posts appear on /blog immediately */
     published: true,
 };
 
@@ -30,11 +31,21 @@ function slugify(s) {
         .replace(/(^-|-$)/g, "");
 }
 
+function contentIsEmpty(html) {
+    if (!html) return true;
+    const text = String(html)
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .trim();
+    return !text;
+}
+
 export default function AdminBlogsPage() {
     const [items, setItems] = useState([]);
     const [form, setForm] = useState(empty);
     const [editId, setEditId] = useState(null);
     const [busy, setBusy] = useState(false);
+    const [aiBusy, setAiBusy] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
@@ -70,8 +81,49 @@ export default function AdminBlogsPage() {
         }
     };
 
+    const generateFromTitle = async () => {
+        if (!form.title.trim()) {
+            setError("Enter a title first, then click Generate with AI.");
+            return;
+        }
+        setAiBusy(true);
+        setError("");
+        setMessage("");
+        try {
+            const res = await fetch("/api/generate-blog", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: form.title.trim() }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+                throw new Error(data.error || `AI request failed (${res.status})`);
+            }
+            setForm((f) => ({
+                ...f,
+                excerpt: data.excerpt || f.excerpt,
+                content: data.contentHtml || f.content,
+                tags: Array.isArray(data.tags) && data.tags.length
+                    ? data.tags.join(", ")
+                    : f.tags,
+                slug: f.slug || slugify(f.title),
+            }));
+            setMessage(
+                "AI draft ready — review the rich text, edit anything, then publish."
+            );
+        } catch (err) {
+            setError(err.message || "AI generation failed.");
+        } finally {
+            setAiBusy(false);
+        }
+    };
+
     const onSubmit = async (e) => {
         e.preventDefault();
+        if (contentIsEmpty(form.content)) {
+            setError("Add article content, or generate a draft from the title with AI.");
+            return;
+        }
         setBusy(true);
         setError("");
         setMessage("");
@@ -92,14 +144,15 @@ export default function AdminBlogsPage() {
             const live = payload.published
                 ? ` Live on /blog/${payload.slug}`
                 : " Saved as draft (not on public site until Published is ticked).";
-            setMessage(
-                (editId ? "Blog updated." : "Blog created.") + live
-            );
+            setMessage((editId ? "Blog updated." : "Blog created.") + live);
             setForm(empty);
             setEditId(null);
             await load();
         } catch (err) {
-            setError(err.message || "Save failed. Ensure Firestore is set up and you are an admin.");
+            setError(
+                err.message ||
+                "Save failed. Ensure Firestore is set up and you are an admin."
+            );
         } finally {
             setBusy(false);
         }
@@ -107,11 +160,13 @@ export default function AdminBlogsPage() {
 
     const onEdit = (item) => {
         setEditId(item.id);
+        const raw = item.content || "";
         setForm({
             title: item.title || "",
             slug: item.slug || "",
             excerpt: item.excerpt || "",
-            content: item.content || "",
+            // Convert legacy plain/markdown bodies into HTML for the editor
+            content: looksLikeHtml(raw) ? raw : legacyContentToHtml(raw),
             coverImage: item.coverImage || "",
             author: item.author || "Chameleon Care Group",
             tags: Array.isArray(item.tags) ? item.tags.join(", ") : "",
@@ -133,7 +188,7 @@ export default function AdminBlogsPage() {
     return (
         <AdminShell
             title="Blogs"
-            subtitle="Upload, edit and publish blog posts."
+            subtitle="Rich text editor + AI draft from title. Publish to the public /blog page."
             action={
                 editId ? (
                     <button
@@ -159,33 +214,70 @@ export default function AdminBlogsPage() {
                 {error && (
                     <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>
                 )}
+
+                <div
+                    className={styles.alert}
+                    style={{
+                        background: "#f0fdfa",
+                        border: "1px solid rgba(13, 148, 136, 0.25)",
+                        color: "var(--color-bg-dark)",
+                    }}
+                >
+                    <strong>Fast path:</strong> type a title →{" "}
+                    <em>Generate with AI</em> → tweak in the rich editor → publish.
+                    Requires <code>XAI_API_KEY</code> on the server.
+                </div>
+
                 <form onSubmit={onSubmit}>
                     <div className={styles.formGrid}>
-                        <div className="form-field">
+                        <div className="form-field full">
                             <label>Title</label>
-                            <input name="title" required value={form.title} onChange={onChange} />
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
+                                <input
+                                    name="title"
+                                    required
+                                    value={form.title}
+                                    onChange={onChange}
+                                    placeholder="e.g. How NDIS respite supports families"
+                                    style={{ flex: "1 1 240px" }}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn btn-accent"
+                                    disabled={aiBusy || busy || !form.title.trim()}
+                                    onClick={generateFromTitle}
+                                >
+                                    {aiBusy ? "Writing…" : "Generate with AI"}
+                                </button>
+                            </div>
                         </div>
                         <div className="form-field">
                             <label>Slug (URL)</label>
                             <input name="slug" required value={form.slug} onChange={onChange} />
                         </div>
-                        <div className="form-field full">
-                            <label>Excerpt</label>
-                            <input name="excerpt" value={form.excerpt} onChange={onChange} />
-                        </div>
-                        <div className="form-field full">
-                            <label>Content (Markdown-style paragraphs)</label>
-                            <textarea
-                                name="content"
-                                required
-                                value={form.content}
-                                onChange={onChange}
-                                style={{ minHeight: 200 }}
-                            />
-                        </div>
                         <div className="form-field">
                             <label>Author</label>
                             <input name="author" value={form.author} onChange={onChange} />
+                        </div>
+                        <div className="form-field full">
+                            <label>Excerpt (social / SEO description)</label>
+                            <input
+                                name="excerpt"
+                                value={form.excerpt}
+                                onChange={onChange}
+                                placeholder="Short summary for Facebook previews and the blog card"
+                            />
+                        </div>
+                        <div className="form-field full">
+                            <label>Article body</label>
+                            <RichTextEditor
+                                value={form.content}
+                                onChange={(html) =>
+                                    setForm((f) => ({ ...f, content: html }))
+                                }
+                                placeholder="Write here, or generate a draft from the title…"
+                                minHeight={320}
+                            />
                         </div>
                         <div className="form-field">
                             <label>Tags (comma separated)</label>
@@ -207,11 +299,13 @@ export default function AdminBlogsPage() {
                             ) : null}
                         </div>
                         <div className="form-field">
-                            <label>Or upload image</label>
-                            <input type="file" accept="image/*" onChange={onFile} disabled={busy} />
-                            <span className="hint" style={{ display: "block", marginTop: "0.35rem" }}>
-                                JPG, PNG or WebP · max 10MB · stored in Firebase Storage
-                            </span>
+                            <label>Or upload cover image</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={onFile}
+                                disabled={busy}
+                            />
                         </div>
                     </div>
                     <label className={styles.checkRow}>
@@ -223,8 +317,15 @@ export default function AdminBlogsPage() {
                         />
                         Published (must be ticked to show on /blog)
                     </label>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center" }}>
-                        <button type="submit" className="btn btn-primary" disabled={busy}>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "0.75rem",
+                            alignItems: "center",
+                        }}
+                    >
+                        <button type="submit" className="btn btn-primary" disabled={busy || aiBusy}>
                             {busy ? "Saving…" : editId ? "Update post" : "Publish / save post"}
                         </button>
                         {form.slug && form.published && (
@@ -298,8 +399,7 @@ export default function AdminBlogsPage() {
                             {!items.length && (
                                 <tr>
                                     <td colSpan={4}>
-                                        No posts in Firestore yet. Create one above or seed defaults
-                                        in Settings.
+                                        No posts yet. Add a title and generate a draft above.
                                     </td>
                                 </tr>
                             )}

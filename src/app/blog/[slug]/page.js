@@ -10,6 +10,7 @@ import {
     resolveBlogPost,
 } from "@/lib/blogShare";
 import ShareButtons from "@/components/ShareButtons";
+import { legacyContentToHtml, sanitizeBlogHtml } from "@/lib/htmlContent";
 import styles from "./page.module.css";
 import shareStyles from "@/components/ShareButtons.module.css";
 
@@ -37,7 +38,7 @@ export default async function BlogPostPage({ params }) {
     const post = await resolveBlogPost(slug);
     if (!post) notFound();
 
-    const paragraphs = (post.content || "").split("\n\n");
+    const bodyHtml = sanitizeBlogHtml(legacyContentToHtml(post.content || ""));
     const shareUrl = absoluteUrl(`/blog/${post.slug || slug}`);
     const shareImage = blogShareImage(post);
     const jsonLd = blogJsonLd(post, slug);
@@ -96,24 +97,10 @@ export default async function BlogPostPage({ params }) {
                             />
                         </div>
                     )}
-                    <article className="prose">
-                        {paragraphs.map((block, i) => {
-                            if (block.startsWith("## ")) {
-                                return <h2 key={i}>{block.replace("## ", "")}</h2>;
-                            }
-                            if (block.startsWith("- ")) {
-                                const items = block.split("\n").filter(Boolean);
-                                return (
-                                    <ul key={i}>
-                                        {items.map((li) => (
-                                            <li key={li}>{li.replace(/^- /, "")}</li>
-                                        ))}
-                                    </ul>
-                                );
-                            }
-                            return <p key={i}>{block}</p>;
-                        })}
-                    </article>
+                    <article
+                        className="prose"
+                        dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                    />
 
                     <div className={styles.shareFooter}>
                         <ShareButtons

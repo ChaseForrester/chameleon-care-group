@@ -85,6 +85,10 @@ export default function AdminDashboard() {
                         <strong>Update services</strong>
                         <span>Keep service info current as the business grows.</span>
                     </Link>
+                    <Link href="/admin/laws" className={styles.quickCard}>
+                        <strong>Laws & documents</strong>
+                        <span>Upload, replace or hide PDFs on the public Laws page.</span>
+                    </Link>
                     <Link href="/admin/pages" className={styles.quickCard}>
                         <strong>Edit page content</strong>
                         <span>Change headlines and copy without a developer.</span>

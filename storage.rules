@@ -50,5 +50,11 @@ service firebase.storage {
       allow create: if underLimit() && isAllowedDoc();
       allow update, delete: if isSignedIn();
     }
+
+    // Laws & policy PDFs uploaded from Super Admin
+    match /legal/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn() && underLimit() && isAllowedDoc();
+    }
   }
 }

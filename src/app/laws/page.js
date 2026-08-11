@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "../legal.module.css";
-import { KEY_LAWS, LEGAL_PDFS } from "@/lib/legalDocs";
+import { KEY_LAWS } from "@/lib/legalDocs";
 import Reveal from "@/components/Reveal";
+import LegalDocsGrid from "@/components/LegalDocsGrid";
 
 export const metadata = {
     title: "Laws, Policies & Downloadable Documents",
@@ -17,15 +18,6 @@ export const metadata = {
 };
 
 export default function LawsPage() {
-    // Keep Forms & Pricing first
-    const preferred = ["Forms", "Pricing"];
-    const rest = [
-        ...new Set(
-            LEGAL_PDFS.map((d) => d.category).filter((c) => !preferred.includes(c))
-        ),
-    ];
-    const categories = [...preferred.filter((c) => LEGAL_PDFS.some((d) => d.category === c)), ...rest];
-
     return (
         <>
             <section className="page-hero">
@@ -74,39 +66,7 @@ export default function LawsPage() {
                         .
                     </div>
 
-                    {categories.map((cat) => (
-                        <div key={cat} className={styles.docSection}>
-                            <h2>{cat}</h2>
-                            <div className={styles.docGrid}>
-                                {LEGAL_PDFS.filter((d) => d.category === cat).map((doc) => (
-                                    <article key={doc.id} className={`card ${styles.docCard}`}>
-                                        <span className="badge">PDF</span>
-                                        <h3>{doc.title}</h3>
-                                        <p>{doc.description}</p>
-                                        <div className={styles.docActions}>
-                                            <a
-                                                href={doc.file}
-                                                className="btn btn-primary btn-sm"
-                                                download
-                                            >
-                                                Download PDF
-                                            </a>
-                                            {doc.externalUrl && (
-                                                <a
-                                                    href={doc.externalUrl}
-                                                    className="btn btn-outline btn-sm"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    {doc.externalLabel || "Official source"}
-                                                </a>
-                                            )}
-                                        </div>
-                                    </article>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
+                    <LegalDocsGrid />
 
                     <div className={styles.lawList}>
                         <h2>Key laws & frameworks that may apply</h2>

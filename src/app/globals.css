@@ -588,6 +588,20 @@ main {
 }
 
 /* Prose */
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.prose ol {
+  margin: 0 0 1rem 1.25rem;
+  padding: 0;
+}
+
 .prose {
   max-width: 720px;
   margin: 0 auto;
