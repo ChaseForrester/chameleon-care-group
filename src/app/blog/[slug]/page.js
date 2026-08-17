@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import CmsImage from "@/components/CmsImage";
 import { DEFAULT_BLOGS } from "@/lib/seedData";
 import {
     absoluteUrl,
@@ -13,6 +12,15 @@ import ShareButtons from "@/components/ShareButtons";
 import { legacyContentToHtml, sanitizeBlogHtml } from "@/lib/htmlContent";
 import styles from "./page.module.css";
 import shareStyles from "@/components/ShareButtons.module.css";
+
+function coverSrc(src) {
+    if (!src) return "";
+    // Local seed photos ship as .jpg; do not rewrite Firebase / remote URLs
+    if (src.startsWith("/images/") && src.endsWith(".webp")) {
+        return src.replace(/\.webp$/i, ".jpg");
+    }
+    return src;
+}
 
 export function generateStaticParams() {
     return DEFAULT_BLOGS.map((b) => ({ slug: b.slug }));
@@ -84,18 +92,12 @@ export default async function BlogPostPage({ params }) {
                 <div className="container">
                     {post.coverImage && (
                         <div className={styles.cover}>
-                            <CmsImage
-                                src={
-                                    post.coverImage.endsWith(".webp")
-                                        ? post.coverImage.replace(".webp", ".jpg")
-                                        : post.coverImage
-                                }
+                            {/* Native img so CMS graphics keep their real aspect ratio.
+                                next/image needs a guessed width/height and was cropping banners. */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={coverSrc(post.coverImage)}
                                 alt={post.title || "Blog cover"}
-                                width={1600}
-                                height={900}
-                                sizes="(max-width: 980px) 100vw, 960px"
-                                style={{ width: "100%", height: "auto" }}
-                                priority
                             />
                         </div>
                     )}

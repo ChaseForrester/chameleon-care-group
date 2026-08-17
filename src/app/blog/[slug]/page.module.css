@@ -24,14 +24,17 @@
     margin: 0 auto 2.5rem;
     border-radius: var(--radius-xl);
     overflow: hidden;
-    background: var(--color-bg-muted);
+    line-height: 0;
+    background: transparent;
 }
 
 .cover img {
-    width: 100%;
-    height: auto;
     display: block;
+    width: 100%;
+    height: auto !important;
+    max-height: none !important;
     object-fit: contain;
+    object-position: center;
 }
 
 .shareFooter {

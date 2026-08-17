@@ -636,6 +636,7 @@ main {
   max-width: 100%;
   width: auto;
   height: auto;
+  object-fit: contain;
   border-radius: var(--radius-md);
   display: block;
 }
@@ -645,16 +646,17 @@ main {
 }
 
 .prose .blog-figure {
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
 
 .prose .blog-figure img {
-  width: auto;
+  width: 100%;
   max-width: 100%;
   height: auto;
+  object-fit: contain;
 }
 
 .prose .blog-embed,
