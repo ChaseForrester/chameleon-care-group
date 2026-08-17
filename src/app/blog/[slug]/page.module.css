@@ -30,8 +30,8 @@
 .cover img {
     width: 100%;
     height: auto;
-    max-height: 420px;
-    object-fit: cover;
+    display: block;
+    object-fit: contain;
 }
 
 .shareFooter {

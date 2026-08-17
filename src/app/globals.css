@@ -634,6 +634,7 @@ main {
 .prose img,
 .prose video {
   max-width: 100%;
+  width: auto;
   height: auto;
   border-radius: var(--radius-md);
   display: block;
@@ -643,8 +644,17 @@ main {
   margin: 1.4rem 0;
 }
 
+.prose .blog-figure {
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .prose .blog-figure img {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 .prose .blog-embed,
@@ -677,8 +687,8 @@ main {
 
 .prose .blog-gallery img {
   width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
 }
 
 /* Badge */

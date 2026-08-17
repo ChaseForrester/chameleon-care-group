@@ -91,8 +91,10 @@ export default async function BlogPostPage({ params }) {
                                         : post.coverImage
                                 }
                                 alt={post.title || "Blog cover"}
-                                width={1200}
-                                height={630}
+                                width={1600}
+                                height={900}
+                                sizes="(max-width: 980px) 100vw, 960px"
+                                style={{ width: "100%", height: "auto" }}
                                 priority
                             />
                         </div>

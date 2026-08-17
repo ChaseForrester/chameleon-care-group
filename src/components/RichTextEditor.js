@@ -127,6 +127,25 @@ export default function RichTextEditor({
         return onUploadFile(file);
     };
 
+    const readImageSize = (file) =>
+        new Promise((resolve) => {
+            const url = URL.createObjectURL(file);
+            const img = new window.Image();
+            img.onload = () => {
+                const size = {
+                    width: img.naturalWidth || 0,
+                    height: img.naturalHeight || 0,
+                };
+                URL.revokeObjectURL(url);
+                resolve(size);
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                resolve({});
+            };
+            img.src = url;
+        });
+
     const onImagesSelected = async (e) => {
         const files = Array.from(e.target.files || []).filter((f) =>
             f.type.startsWith("image/")
@@ -138,14 +157,25 @@ export default function RichTextEditor({
         try {
             const items = [];
             for (const file of files) {
-                const url = await uploadOne(file);
+                const [url, size] = await Promise.all([
+                    uploadOne(file),
+                    readImageSize(file),
+                ]);
                 items.push({
                     src: url,
                     alt: file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " "),
+                    width: size.width,
+                    height: size.height,
                 });
             }
-            if (items.length === 1) insertHtml(imageFigureHtml(items[0].src, items[0].alt));
-            else insertHtml(galleryHtml(items));
+            if (items.length === 1) {
+                insertHtml(
+                    imageFigureHtml(items[0].src, items[0].alt, {
+                        width: items[0].width,
+                        height: items[0].height,
+                    })
+                );
+            } else insertHtml(galleryHtml(items));
         } catch (err) {
             fail(err.message || "Image upload failed.");
         } finally {
@@ -201,9 +231,12 @@ export default function RichTextEditor({
                     if (file.type.startsWith("video/")) {
                         insertHtml(uploadedVideoHtml(url));
                     } else {
+                        const size = await readImageSize(file);
                         images.push({
                             src: url,
                             alt: file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " "),
+                            width: size.width,
+                            height: size.height,
                         });
                     }
                 }

@@ -104,6 +104,7 @@
 .editor :global(img),
 .editor :global(video) {
     max-width: 100%;
+    width: auto;
     height: auto;
     border-radius: 10px;
     display: block;
@@ -112,6 +113,13 @@
 
 .editor :global(figure) {
     margin: 0.85rem 0;
+}
+
+.editor :global(.blog-figure) {
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .editor :global(.blog-embed),
@@ -144,7 +152,7 @@
 
 .editor :global(.blog-gallery img) {
     width: 100%;
+    height: auto;
     margin: 0;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
+    object-fit: contain;
 }

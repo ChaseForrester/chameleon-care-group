@@ -84,9 +84,13 @@ export function videoEmbedHtml(url, title = "Video") {
     return `<figure class="blog-embed">${trustedIframeHtml(parsed.embedUrl, title)}</figure>`;
 }
 
-export function imageFigureHtml(src, alt = "") {
+export function imageFigureHtml(src, alt = "", dims = {}) {
     if (!isSafeMediaUrl(src)) return "";
-    return `<figure class="blog-figure"><img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" /></figure>`;
+    const width = toPixelAttr(dims.width);
+    const height = toPixelAttr(dims.height);
+    const size =
+        width && height ? ` width="${width}" height="${height}"` : "";
+    return `<figure class="blog-figure"><img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}"${size} /></figure>`;
 }
 
 export function uploadedVideoHtml(src) {
@@ -96,7 +100,12 @@ export function uploadedVideoHtml(src) {
 
 export function galleryHtml(items) {
     const figures = (items || [])
-        .map((item) => imageFigureHtml(item.src || item.url, item.alt || ""))
+        .map((item) =>
+            imageFigureHtml(item.src || item.url, item.alt || "", {
+                width: item.width,
+                height: item.height,
+            })
+        )
         .filter(Boolean)
         .join("");
     if (!figures) return "";
@@ -132,11 +141,71 @@ function rewriteIframe(tag) {
     return trustedIframeHtml(parsed.embedUrl, title);
 }
 
+function toPixelAttr(value) {
+    const raw = String(value ?? "").trim();
+    if (!raw || /%|em|rem|vw|vh/i.test(raw)) return "";
+    const n = parseInt(raw.replace(/px$/i, ""), 10);
+    return Number.isFinite(n) && n > 0 && n <= 10000 ? String(n) : "";
+}
+
+function normalizeSizeValue(val) {
+    const v = String(val || "").trim();
+    if (/^auto$/i.test(v)) return "auto";
+    const pct = v.match(/^(\d+(\.\d+)?)%$/);
+    if (pct) return `${parseFloat(pct[1])}%`;
+    const px = v.match(/^(\d+(\.\d+)?)(px)?$/i);
+    if (px) return `${Math.round(parseFloat(px[1]))}px`;
+    const inch = v.match(/^(\d+(\.\d+)?)in$/i);
+    if (inch) return `${Math.round(parseFloat(inch[1]) * 96)}px`;
+    const cm = v.match(/^(\d+(\.\d+)?)cm$/i);
+    if (cm) return `${Math.round(parseFloat(cm[1]) * 37.8)}px`;
+    return "";
+}
+
+function styleDecl(style, prop) {
+    const m = String(style || "").match(
+        new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*([^;]+)`, "i")
+    );
+    return m ? m[1].trim() : "";
+}
+
+function sanitizeSizeStyle(style) {
+    if (!style) return "";
+    const parts = [];
+    for (const prop of ["width", "height", "max-width", "max-height"]) {
+        const raw = styleDecl(style, prop);
+        const val = normalizeSizeValue(raw);
+        if (val) parts.push(`${prop}: ${val}`);
+    }
+    return parts.join("; ");
+}
+
+function allowedImgClass(value) {
+    return String(value || "")
+        .split(/\s+/)
+        .filter((c) => /^(blog-[\w-]+|align(left|right|center))$/.test(c))
+        .join(" ");
+}
+
 function rewriteImg(tag) {
     const src = getAttr(tag, "src");
     const alt = getAttr(tag, "alt") || "";
     if (!isSafeMediaUrl(src)) return "";
-    return `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}" />`;
+
+    const style = sanitizeSizeStyle(getAttr(tag, "style"));
+    let width = toPixelAttr(getAttr(tag, "width"));
+    let height = toPixelAttr(getAttr(tag, "height"));
+    if (!width) width = toPixelAttr(normalizeSizeValue(styleDecl(style, "width")));
+    if (!height) height = toPixelAttr(normalizeSizeValue(styleDecl(style, "height")));
+    const cls = allowedImgClass(getAttr(tag, "class"));
+
+    let out = `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}"`;
+    if (width) out += ` width="${width}"`;
+    if (height) out += ` height="${height}"`;
+    if (style) out += ` style="${escapeAttr(style)}"`;
+    if (cls) out += ` class="${escapeAttr(cls)}"`;
+    out += " />";
+    return out;
 }
 
 function rewriteAnchor(tag, inner) {
@@ -214,8 +283,10 @@ export function sanitizePastedHtml(html) {
     out = out.replace(/<style[\s\S]*?<\/style>/gi, "");
     out = out.replace(/<xml[\s\S]*?<\/xml>/gi, "");
     out = out.replace(/<\/?o:[^>]*>/gi, "");
-    out = out.replace(/\sclass=("([^"]*)"|'([^']*)')/gi, "");
-    out = out.replace(/\sstyle=("([^"]*)"|'([^']*)')/gi, "");
+    out = out.replace(/<([a-z][a-z0-9]*)\b([^>]*)>/gi, (full, name, rest) => {
+        if (/^img$/i.test(name)) return full;
+        return `<${name}${rest.replace(/\s(?:class|style)=("([^"]*)"|'([^']*)')/gi, "")}>`;
+    });
     return sanitizeBlogHtml(out);
 }
 
