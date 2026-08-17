@@ -9,8 +9,13 @@ service firebase.storage {
       return request.resource.contentType.matches('image/.*');
     }
 
+    function isVideo() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
     function isAllowedDoc() {
       return request.resource.contentType.matches('image/.*')
+        || request.resource.contentType.matches('video/.*')
         || request.resource.contentType == 'application/pdf'
         || request.resource.contentType == 'application/msword'
         || request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -22,6 +27,10 @@ service firebase.storage {
       return request.resource.size < 10 * 1024 * 1024;
     }
 
+    function underMediaLimit() {
+      return request.resource.size < 50 * 1024 * 1024;
+    }
+
     // Admin CMS media (blogs, stories, generic uploads)
     match /uploads/{allPaths=**} {
       allow read: if true;
@@ -30,7 +39,7 @@ service firebase.storage {
 
     match /blogs/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn() && underLimit() && isImage();
+      allow write: if isSignedIn() && underMediaLimit() && (isImage() || isVideo());
     }
 
     match /stories/{allPaths=**} {

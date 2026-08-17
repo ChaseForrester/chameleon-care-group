@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import CmsImage from "@/components/CmsImage";
 import { DEFAULT_BLOGS } from "@/lib/seedData";
 import {
     absoluteUrl,
@@ -84,7 +84,7 @@ export default async function BlogPostPage({ params }) {
                 <div className="container">
                     {post.coverImage && (
                         <div className={styles.cover}>
-                            <Image
+                            <CmsImage
                                 src={
                                     post.coverImage.endsWith(".webp")
                                         ? post.coverImage.replace(".webp", ".jpg")

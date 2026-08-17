@@ -10,6 +10,7 @@ import {
     DEFAULT_STORIES,
 } from "@/lib/seedData";
 import ShareButtons from "@/components/ShareButtons";
+import CmsImage from "@/components/CmsImage";
 
 /** Match cms.cleanStoryText — keep public bundle free of heavy imports when possible */
 function cleanStoryText(value) {
@@ -154,7 +155,7 @@ export function BlogGrid({ styles }) {
                         <Link href={href} className={styles.cardLink}>
                             <div className={styles.cover}>
                                 {post.coverImage && (
-                                    <Image
+                                    <CmsImage
                                         src={
                                             post.coverImage.endsWith(".webp")
                                                 ? post.coverImage.replace(".webp", ".jpg")

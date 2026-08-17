@@ -22,6 +22,7 @@ import {
   DEFAULT_STORIES,
 } from "./seedData";
 import { LEGAL_PDFS } from "./legalDocs";
+import { parseVideoUrl, prepareBlogHtml } from "./htmlContent";
 
 function db() {
   return getClientDb();
@@ -284,20 +285,54 @@ export async function getSettings() {
 
 /* ── Admin CRUD ── */
 
+function stripUndefined(obj) {
+  const out = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) out[key] = value;
+  }
+  return out;
+}
+
+export function explainCmsError(err) {
+  const msg = String(err?.message || err || "");
+  if (/permission|insufficient|unauth/i.test(msg)) {
+    return "Save was blocked. Sign in as an admin and try again.";
+  }
+  if (/unsupported field value|undefined/i.test(msg)) {
+    return "Save failed because some fields were empty or invalid. Check the form and try again.";
+  }
+  if (/exceeds|too large|longer than|1048487/i.test(msg)) {
+    return "This post is too large to publish. Upload images and videos instead of pasting them into the article.";
+  }
+  if (/storage|quota/i.test(msg)) {
+    return "Image or video upload failed. Check that Firebase Storage is enabled and you are signed in.";
+  }
+  return msg || "Save failed. Ensure Firestore is set up and you are an admin.";
+}
+
+function safeCoverImage(url) {
+  const s = String(url || "").trim();
+  if (!s || s.startsWith("data:")) return "";
+  if (parseVideoUrl(s)) return "";
+  return s;
+}
+
 export async function saveBlog(id, data) {
-  const payload = {
-    ...data,
+  const payload = stripUndefined({
     title: (data.title || "").trim(),
     slug: (data.slug || "").trim(),
     excerpt: data.excerpt || "",
-    content: data.content || "",
-    coverImage: data.coverImage || "",
+    content: prepareBlogHtml(data.content || ""),
+    coverImage: safeCoverImage(data.coverImage),
     author: data.author || "Chameleon Care Group",
     tags: Array.isArray(data.tags) ? data.tags : [],
     // Always store a real boolean so public queries / filters work
     published: data.published === true || data.published === "true",
     updatedAt: serverTimestamp(),
-  };
+  });
+
+  if (!payload.title) throw new Error("A title is required.");
+  if (!payload.slug) throw new Error("A URL slug is required.");
 
   if (payload.published) {
     // New publishes always get a timestamp; keep existing on edit via merge
@@ -650,6 +685,27 @@ export async function uploadImage(file, folder = "uploads") {
     contentType: file.type || "image/jpeg",
   });
   return getDownloadURL(storageRef);
+}
+
+const IMAGE_MAX_BYTES = 12 * 1024 * 1024;
+const VIDEO_MAX_BYTES = 50 * 1024 * 1024;
+
+/** Upload a blog image or video to Storage and return the public URL. */
+export async function uploadBlogMedia(file, folder = "blogs") {
+  if (!file) throw new Error("No file selected");
+  const isImage = (file.type || "").startsWith("image/");
+  const isVideo = (file.type || "").startsWith("video/");
+  if (!isImage && !isVideo) {
+    throw new Error("Please choose an image or video file.");
+  }
+  const limit = isVideo ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
+  if (file.size > limit) {
+    const mb = Math.max(1, Math.round(file.size / (1024 * 1024)));
+    const max = Math.round(limit / (1024 * 1024));
+    throw new Error(`That file is ${mb}MB. The limit is ${max}MB.`);
+  }
+  const uploaded = await uploadFile(file, folder);
+  return uploaded.url;
 }
 
 /**

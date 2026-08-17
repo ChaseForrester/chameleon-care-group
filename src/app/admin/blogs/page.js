@@ -8,9 +8,14 @@ import {
     getBlogs,
     saveBlog,
     deleteBlog,
-    uploadImage,
+    uploadBlogMedia,
+    explainCmsError,
 } from "@/lib/cms";
-import { legacyContentToHtml, looksLikeHtml } from "@/lib/htmlContent";
+import {
+    contentIsEmpty,
+    legacyContentToHtml,
+    looksLikeHtml,
+} from "@/lib/htmlContent";
 
 const empty = {
     title: "",
@@ -29,15 +34,6 @@ function slugify(s) {
         .trim()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
-}
-
-function contentIsEmpty(html) {
-    if (!html) return true;
-    const text = String(html)
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ")
-        .trim();
-    return !text;
 }
 
 export default function AdminBlogsPage() {
@@ -72,10 +68,10 @@ export default function AdminBlogsPage() {
         if (!file) return;
         setBusy(true);
         try {
-            const url = await uploadImage(file, "blogs");
+            const url = await uploadBlogMedia(file, "blogs");
             setForm((f) => ({ ...f, coverImage: url }));
         } catch (err) {
-            setError(err.message || "Upload failed — enable Storage in Firebase Console.");
+            setError(explainCmsError(err) || "Upload failed — enable Storage in Firebase Console.");
         } finally {
             setBusy(false);
         }
@@ -121,7 +117,9 @@ export default function AdminBlogsPage() {
     const onSubmit = async (e) => {
         e.preventDefault();
         if (contentIsEmpty(form.content)) {
-            setError("Add article content, or generate a draft from the title with AI.");
+            setError(
+                "Add article text, images, or a video — or generate a draft from the title with AI."
+            );
             return;
         }
         setBusy(true);
@@ -149,10 +147,7 @@ export default function AdminBlogsPage() {
             setEditId(null);
             await load();
         } catch (err) {
-            setError(
-                err.message ||
-                "Save failed. Ensure Firestore is set up and you are an admin."
-            );
+            setError(explainCmsError(err));
         } finally {
             setBusy(false);
         }
@@ -188,7 +183,7 @@ export default function AdminBlogsPage() {
     return (
         <AdminShell
             title="Blogs"
-            subtitle="Rich text editor + AI draft from title. Publish to the public /blog page."
+            subtitle="Write with images, galleries, videos and links. Publish to the public /blog page."
             action={
                 editId ? (
                     <button
@@ -224,8 +219,8 @@ export default function AdminBlogsPage() {
                     }}
                 >
                     <strong>Fast path:</strong> type a title →{" "}
-                    <em>Generate with AI</em> → tweak in the rich editor → publish.
-                    Requires <code>XAI_API_KEY</code> on the server.
+                    <em>Generate with AI</em> → add pictures, videos or links in the
+                    toolbar → publish. Requires <code>XAI_API_KEY</code> on the server.
                 </div>
 
                 <form onSubmit={onSubmit}>
@@ -275,6 +270,8 @@ export default function AdminBlogsPage() {
                                 onChange={(html) =>
                                     setForm((f) => ({ ...f, content: html }))
                                 }
+                                onUploadFile={(file) => uploadBlogMedia(file, "blogs")}
+                                onError={(msg) => setError(msg || "")}
                                 placeholder="Write here, or generate a draft from the title…"
                                 minHeight={320}
                             />
